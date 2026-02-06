@@ -1,63 +1,68 @@
-import Image from "next/image";
+import Link from 'next/link';
+import Image from 'next/image';
+import { HeroSearch } from '../components/ui/hero-search';
+import { ShoppingBag, PawPrint, Hammer, Leaf, Truck, Heart } from 'lucide-react';
 
 export default function Home() {
+  const categories = [
+    { name: 'Einkaufen', icon: ShoppingBag, slug: 'shopping' },
+    { name: 'Tierbetreuung', icon: PawPrint, slug: 'pets' },
+    { name: 'Handwerk', icon: Hammer, slug: 'diy' },
+    { name: 'Garten', icon: Leaf, slug: 'garden' },
+    { name: 'Transport', icon: Truck, slug: 'transport' },
+    { name: 'Pflege', icon: Heart, slug: 'care' },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <div className="h-full min-h-full overflow-hidden flex flex-col font-[family-name:var(--font-geist-sans)] bg-amber-50/50 dark:bg-zinc-950">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-8 items-center h-full max-h-[800px]">
+
+          {/* Left: Content */}
+          <div className="flex flex-col justify-center space-y-8 z-10 p-4">
+            <div className="space-y-4">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+                Hilfe von Nebenan.<br />
+                <span className="text-amber-600">Einfach. Lokal.</span>
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-lg">
+                Finde vertrauenswürdige Nachbarn für Aufgaben im Alltag oder biete deine Hilfe an.
+              </p>
+            </div>
+
+            <div className="w-full max-w-lg">
+              <HeroSearch />
+
+              {/* Compact Categories */}
+              <div className="mt-8">
+                <p className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Beliebte Kategorien</p>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      href={`/tasks?category=${cat.slug}`}
+                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800 hover:border-amber-400 hover:text-amber-600 transition-colors shadow-sm text-sm font-medium"
+                    >
+                      <cat.icon size={16} />
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Hero Image */}
+          <div className="relative h-[85%] w-full hidden lg:block rounded-3xl overflow-hidden shadow-2xl hover:scale-[1.01] transition-transform duration-700 bg-amber-100 self-center">
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/hero.png"
+              alt="Nachbarn helfen Nachbarn"
+              fill
+              className="object-cover"
+              priority
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
         </div>
       </main>
     </div>
