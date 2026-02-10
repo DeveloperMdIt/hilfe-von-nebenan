@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { logoutUser } from '@/app/actions';
 import { LogOut } from 'lucide-react';
 
-export function Header({ user }: { user?: { fullName?: string | null; role?: string | null;[key: string]: any } }) {
+export function Header({ user }: { user?: { fullName?: string | null; role?: string | null;[key: string]: any } | null }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
 

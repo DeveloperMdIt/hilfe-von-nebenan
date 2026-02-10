@@ -19,8 +19,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo mkdir -p /var/www/hilfevonnebenan
-            sudo chown -R sunlinermicha:sunlinermicha /var/www/hilfevonnebenan
+            mkdir -p /var/www/hilfevonnebenan
             cd /var/www/hilfevonnebenan
             # If repo doesn't exist, clone it. Otherwise pull.
             if [ ! -d ".git" ]; then
