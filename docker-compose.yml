@@ -14,5 +14,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
+  hilfe-app:
+    build: .
+    container_name: hilfe_app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@database:5432/hilfevonnebenan
+      - NODE_ENV=production
+    depends_on:
+      - database
+    restart: always
+
 volumes:
   postgres_data:
