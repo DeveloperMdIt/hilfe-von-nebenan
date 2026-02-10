@@ -48,7 +48,7 @@ export function PlanEditForm({ plan }: { plan: any }) {
                 Preise & Konditionen anpassen
                 {showSuccess && (
                     <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded animate-in fade-in slide-in-from-bottom-1">
-                        {state.message}
+                        {state?.message}
                     </span>
                 )}
             </h4>
