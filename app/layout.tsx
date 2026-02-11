@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 
 import { cookies } from "next/headers";
 import { db } from "../lib/db";
-import { users } from "../lib/schema";
-import { eq } from "drizzle-orm";
+import { users, messages } from "../lib/schema";
+import { eq, and, count } from "drizzle-orm";
 
 import { CookieBanner } from "../components/ui/cookie-banner";
 import { Footer } from "../components/ui/footer";
@@ -34,15 +34,28 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   let user = null;
+  let unreadCount = 0;
 
   if (userId) {
-    const result = await db.select({
+    const userResult = await db.select({
       id: users.id,
       fullName: users.fullName,
       email: users.email,
       role: users.role,
     }).from(users).where(eq(users.id, userId));
-    user = result[0] || null;
+    user = userResult[0] || null;
+
+    if (user) {
+      const messageResult = await db.select({
+        value: count()
+      }).from(messages).where(
+        and(
+          eq(messages.receiverId, userId),
+          eq(messages.isRead, false)
+        )
+      );
+      unreadCount = Number(messageResult[0]?.value || 0);
+    }
   }
 
   return (
@@ -50,7 +63,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
-        <Header user={user} />
+        <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden">
           {children}
           <Footer />

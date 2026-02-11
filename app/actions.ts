@@ -257,7 +257,29 @@ export async function sendMessage(formData: FormData) {
     revalidatePath('/messages');
 }
 
+export async function markMessagesAsRead(partnerId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId || !partnerId) return;
+
+    await db.update(messages)
+        .set({ isRead: true })
+        .where(
+            and(
+                eq(messages.senderId, partnerId),
+                eq(messages.receiverId, userId),
+                eq(messages.isRead, false)
+            )
+        );
+
+    revalidatePath('/messages');
+    revalidatePath('/layout'); // To clear header cache if applicable
+}
+
 import { subscriptionPlans } from '../lib/schema';
+
+
 
 export async function updateSubscriptionPlan(formData: FormData) {
     const id = formData.get('id') as string;

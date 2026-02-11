@@ -8,7 +8,10 @@ import { useState } from 'react';
 import { logoutUser } from '@/app/actions';
 import { LogOut } from 'lucide-react';
 
-export function Header({ user }: { user?: { fullName?: string | null; role?: string | null;[key: string]: any } | null }) {
+export function Header({ user, unreadCount = 0 }: {
+    user?: { fullName?: string | null; role?: string | null;[key: string]: any } | null;
+    unreadCount?: number;
+}) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
 
@@ -52,9 +55,14 @@ export function Header({ user }: { user?: { fullName?: string | null; role?: str
                     {user && (
                         <Link
                             href="/messages"
-                            className={`text-sm font-semibold leading-6 transition-colors ${isActive('/messages') ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100 hover:text-amber-600'}`}
+                            className={`text-sm font-semibold leading-6 transition-colors flex items-center gap-2 ${isActive('/messages') ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100 hover:text-amber-600'}`}
                         >
                             Nachrichten
+                            {unreadCount > 0 && (
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-white dark:ring-zinc-950">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </Link>
                     )}
                     <Link
@@ -114,8 +122,13 @@ export function Header({ user }: { user?: { fullName?: string | null; role?: str
                             Aufträge finden
                         </Link>
                         {user && (
-                            <Link href="/messages" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
+                            <Link href="/messages" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600 flex items-center justify-between">
                                 Nachrichten
+                                {unreadCount > 0 && (
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                                        {unreadCount}
+                                    </span>
+                                )}
                             </Link>
                         )}
                         {!user ? (

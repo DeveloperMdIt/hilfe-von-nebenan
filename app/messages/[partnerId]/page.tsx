@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send, User, Crown } from 'lucide-react';
-import { sendMessage } from '@/app/actions';
+import { sendMessage, markMessagesAsRead } from '@/app/actions';
 
 export default async function ChatPage({ params }: { params: Promise<{ partnerId: string }> }) {
     const cookieStore = await cookies();
@@ -15,6 +15,9 @@ export default async function ChatPage({ params }: { params: Promise<{ partnerId
     if (!userId) {
         redirect('/login');
     }
+
+    // Mark messages from this partner to current user as read
+    await markMessagesAsRead(partnerId);
 
     // Fetch partner details
     const partnerResult = await db.select().from(users).where(eq(users.id, partnerId));
