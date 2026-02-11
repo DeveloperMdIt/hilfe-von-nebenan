@@ -2,8 +2,49 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { HeroSearch } from '../components/ui/hero-search';
 import { ShoppingBag, PawPrint, Hammer, Leaf, Truck, Heart } from 'lucide-react';
+import { cookies } from 'next/headers';
+import { getZipCodeStats } from './actions';
+import ZipCodeWaitingView from '../components/dashboard/ZipCodeWaitingView';
+import { db } from '../lib/db';
+import { users } from '../lib/schema';
+import { eq } from 'drizzle-orm';
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('userId')?.value;
+
+  let waitingInfo = null;
+  let userName = '';
+
+  if (userId) {
+    // We could fetch user details here, but for now we trust RootLayout context if it was client side.
+    // Since this is a server component, we need to fetch user's ZIP.
+    const userRes = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = userRes[0];
+
+    if (user && user.zipCode) {
+      userName = user.fullName || 'Nachbar';
+      const stats = await getZipCodeStats(user.zipCode);
+      if (!stats.isActive) {
+        waitingInfo = stats;
+      }
+    }
+  }
+
+  if (waitingInfo) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] bg-amber-50/50 dark:bg-zinc-950 flex items-center justify-center">
+        <ZipCodeWaitingView
+          zipCode={waitingInfo.zipCode}
+          count={waitingInfo.count}
+          threshold={waitingInfo.threshold}
+          needed={waitingInfo.needed}
+          userName={userName}
+        />
+      </div>
+    );
+  }
+
   const categories = [
     { name: 'Einkaufen', icon: ShoppingBag, slug: 'shopping' },
     { name: 'Tierbetreuung', icon: PawPrint, slug: 'pets' },

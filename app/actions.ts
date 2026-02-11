@@ -1,10 +1,15 @@
 'use server';
 
-import { db } from '../lib/db';
-import { tasks, reviews } from '../lib/schema';
+import { db } from '@/lib/db';
+import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq } from 'drizzle-orm';
+import { eq, or, and, desc, sql, count } from 'drizzle-orm';
+import { cookies, headers } from 'next/headers';
+import { filterContactInfo } from '@/lib/utils';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail } from '@/lib/mailer';
 
 export async function createTask(formData: FormData) {
     const title = formData.get('title') as string;
@@ -17,19 +22,15 @@ export async function createTask(formData: FormData) {
         throw new Error('Bitte alle Felder ausfüllen');
     }
 
-    // Convert price to cents (assuming input is e.g. "15" or "15.50")
-    const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
-
-    // In a real app, we would get the user ID from the session
-    // For now, we'll fetch the first user (our seed customer)
-    // const user = await db.query.users.findFirst(); 
-    // simplified:
-    const result = await db.select().from(users).limit(1);
-    const userId = result[0]?.id;
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
 
     if (!userId) {
-        throw new Error('Kein Benutzer gefunden (Seed script gelaufen?)');
+        throw new Error('Nicht eingeloggt. Bitte erst anmelden.');
     }
+
+    // Convert price to cents (assuming input is e.g. "15" or "15.50")
+    const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
 
     await db.insert(tasks).values({
         title,
@@ -45,8 +46,6 @@ export async function createTask(formData: FormData) {
     redirect('/tasks');
 }
 
-import { users } from '../lib/schema';
-
 export async function deleteTask(formData: FormData) {
     const id = formData.get('id') as string;
     if (!id) return;
@@ -56,71 +55,239 @@ export async function deleteTask(formData: FormData) {
     revalidatePath('/tasks');
 }
 
+
+
 export async function registerUser(formData: FormData) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
-    const role = 'customer'; // Default role
-
+    const zipCode = formData.get('zipCode') as string;
+    const password = formData.get('password') as string;
     const consent = formData.get('consent');
 
-    if (!name || !email || !consent) {
-        throw new Error('Bitte füllen Sie alle Pflichtfelder aus.');
+    if (!name || !email || !consent || !zipCode || !password) {
+        return { error: 'Bitte füllen Sie alle Pflichtfelder aus.' };
     }
 
-    const cookieStore = await cookies(); // Used later for session
+    // Password Validation
+    const hasMinLen = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+    if (!hasMinLen || !hasUpper || !hasNumber || !hasSpecial) {
+        return { error: 'Passwort erfüllt nicht die Sicherheitsanforderungen.' };
+    }
+
+    // ZipCode Validation (Simple whitelist for now as mentioned in UI)
+    const allowedPrefixes = ['36', '34', '35']; // Added 35 as it's often close to 36/34 in Hessen
+    const prefix = zipCode.substring(0, 2);
+    if (!allowedPrefixes.includes(prefix)) {
+        return { error: 'Aktuell sind wir nur in den Gebieten 36xxx, 34xxx und 35xxx verfügbar.' };
+    }
+
     const headersList = await headers();
     const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
 
-    // Check if user exists (mock check, or handle unique constraint error)
-    // For now, just try insert
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomUUID();
+
     try {
         await db.insert(users).values({
             email,
             fullName: name,
-            role,
-            // default trustLevel, isVerified etc from schema defaults
+            password: hashedPassword,
+            role: 'customer',
+            zipCode,
+            verificationToken,
             acceptedTermsAt: new Date(),
             acceptedPrivacyAt: new Date(),
             termsVersion: 'v1.0',
             ipAddress: ipAddress,
         });
-    } catch (e) {
+
+        // Send verification email
+        await sendVerificationEmail(email, name, verificationToken);
+    } catch (e: any) {
+        if (e.message?.includes('unique constraint') || e.code === '23505') {
+            return { error: 'Diese E-Mail Adresse ist bereits registriert.' };
+        }
         console.error('Registration error:', e);
-        // In real app, return error to form
-        throw new Error('Email existiert bereits oder Fehler aufgetreten');
+        return { error: 'Ein Fehler ist aufgetreten. Bitte später erneut versuchen.' };
     }
 
-    redirect('/login');
+    redirect('/login?registered=true');
 }
 
-import { cookies, headers } from 'next/headers';
+export async function getZipCodeStats(zipCode: string) {
+    const threshold = 10; // Number of users needed to activate the area
+    const userCountResult = await db.select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.zipCode, zipCode));
 
-export async function loginUser(formData: FormData) {
+    const count = userCountResult[0]?.count || 0;
+    const isActive = count >= threshold;
+
+    return {
+        zipCode,
+        count,
+        threshold,
+        isActive,
+        needed: Math.max(0, threshold - count)
+    };
+}
+
+
+export async function loginUser(prevState: any, formData: FormData) {
     const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    if (!email) {
-        throw new Error('Email erforderlich');
+    if (!email || !password) {
+        return { error: 'Email und Passwort erforderlich', email };
     }
 
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    const user = result[0];
+    const userResult = await db.select().from(users).where(eq(users.email, email));
+    const user = userResult[0];
 
     if (!user) {
-        throw new Error('Benutzer nicht gefunden');
+        return { error: 'Ungültige Zugangsdaten', email };
     }
 
-    // Set session cookie
+    // Check if email is verified
+    if (!user.emailVerifiedAt) {
+        return { error: 'unverified', email: user.email };
+    }
+
+    // Check if account is active
+    if (user.isActive === false) {
+        return { error: 'Account deaktiviert. Bitte kontaktieren Sie den Support.', email: user.email };
+    }
+
+    // Verify password
+    if (user.password) {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return { error: 'Ungültige Zugangsdaten', email };
+        }
+    } else {
+        // Fallback for old users or if password is missing
+        return { error: 'Passwort nicht gesetzt. Bitte Passwort vergessen Funktion nutzen.', email };
+    }
+
     const cookieStore = await cookies();
     cookieStore.set('userId', user.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7 // 7 days
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
     });
 
-    if (user.role === 'admin') {
-        redirect('/admin');
-    } else {
-        redirect('/tasks');
+    redirect('/');
+}
+
+export async function resendVerificationEmail(email: string) {
+    const userResult = await db.select().from(users).where(eq(users.email, email));
+    const user = userResult[0];
+
+    if (!user) {
+        throw new Error('Nutzers nicht gefunden');
+    }
+
+    if (user.emailVerifiedAt) {
+        throw new Error('E-Mail ist bereits verifiziert');
+    }
+
+    // Use existing token or generate new one
+    const token = user.verificationToken || crypto.randomUUID();
+    if (!user.verificationToken) {
+        await db.update(users).set({ verificationToken: token }).where(eq(users.id, user.id));
+    }
+
+    await sendVerificationEmail(user.email, user.fullName || 'Nachbar', token);
+    return { success: true };
+}
+
+export async function verifyEmail(token: string) {
+    const userResult = await db.select().from(users).where(eq(users.verificationToken, token));
+    const user = userResult[0];
+
+    if (!user) {
+        return { success: false, error: 'Ungültiger Verifizierungslink.' };
+    }
+
+    if (user.emailVerifiedAt) {
+        return { success: true };
+    }
+
+    // Mark user as verified
+    await db.update(users)
+        .set({
+            isVerified: true,
+            emailVerifiedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+    // PLZ Activation Logic
+    if (user.zipCode) {
+        const threshold = 10;
+        const verifiedUsersInPlz = await db.select({ count: count() })
+            .from(users)
+            .where(
+                and(
+                    eq(users.zipCode, user.zipCode),
+                    eq(users.isVerified, true)
+                )
+            );
+
+        const verifiedCount = verifiedUsersInPlz[0]?.count || 0;
+
+        if (verifiedCount >= threshold) {
+            // Check if already activated
+            const [activation] = await db.select()
+                .from(zipCodeActivations)
+                .where(eq(zipCodeActivations.zipCode, user.zipCode));
+
+            if (!activation) {
+                // Record activation
+                await db.insert(zipCodeActivations).values({ zipCode: user.zipCode });
+
+                // Get all verified users to notify
+                const recipients = await db.select({ email: users.email })
+                    .from(users)
+                    .where(
+                        and(
+                            eq(users.zipCode, user.zipCode),
+                            eq(users.isVerified, true)
+                        )
+                    );
+
+                const emails = recipients.map(r => r.email);
+                await sendAreaLaunchEmail(emails, user.zipCode);
+                console.log(`🚀 Area ${user.zipCode} activated! Notified ${emails.length} users.`);
+            }
+        }
+    }
+
+    return { success: true };
+}
+
+export async function sendInvitationAction(recipientEmail: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) {
+        return { error: 'Nicht eingeloggt.' };
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return { error: 'Benutzer nicht gefunden.' };
+    if (!user.zipCode) return { error: 'Bitte gib zuerst deine PLZ in deinem Profil an.' };
+
+    try {
+        await sendNeighborInviteEmail(recipientEmail, user.fullName || 'Dein Nachbar', user.zipCode);
+        return { success: true };
+    } catch (error: any) {
+        return { error: 'Einladung konnte nicht gesendet werden.' };
     }
 }
 
@@ -136,6 +303,7 @@ export async function updateUser(formData: FormData) {
     const role = formData.get('role') as string;
     const password = formData.get('password') as string;
     const isHelperBadge = formData.get('isHelperBadge') === 'on';
+    const isActive = formData.get('isActive') === 'on';
 
     if (!id || !email) return;
 
@@ -144,16 +312,31 @@ export async function updateUser(formData: FormData) {
         email,
         role,
         isHelperBadge,
+        isActive,
     };
 
     if (password && password.trim() !== '') {
-        data.password = password;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        data.password = hashedPassword;
     }
 
     await db.update(users).set(data).where(eq(users.id, id));
 
     revalidatePath('/admin/users');
     revalidatePath(`/admin/users/${id}`);
+    redirect('/admin/users');
+}
+
+export async function deleteUserAdmin(formData: FormData) {
+    const id = formData.get('id') as string;
+    if (!id) return;
+
+    // Security check: ensure admin is not deleting themselves easily or at least handle it?
+    // For now, let's just delete.
+
+    await db.delete(users).where(eq(users.id, id));
+
+    revalidatePath('/admin/users');
     redirect('/admin/users');
 }
 
@@ -186,7 +369,6 @@ export async function adminCreateUser(formData: FormData) {
     revalidatePath('/admin/users');
 }
 
-import { emailTemplates, settings } from '../lib/schema';
 
 export async function updateEmailTemplate(formData: FormData) {
     const id = formData.get('id') as string;
@@ -226,17 +408,13 @@ export async function updateSettings(formData: FormData) {
     await saveSetting('module_subscriptions', rawData.moduleSubscriptions === 'on' ? 'true' : 'false');
 
     // Email Automation
-    if (rawData.reminderDays) await saveSetting('reminder_days', rawData.reminderDays as string);
-
     revalidatePath('/admin/settings');
 }
-
-import { messages } from '../lib/schema';
-import { or, and, desc } from 'drizzle-orm';
 
 export async function sendMessage(formData: FormData) {
     const receiverId = formData.get('receiverId') as string;
     const content = formData.get('content') as string;
+    const taskId = formData.get('taskId') as string;
 
     if (!receiverId || !content) return;
 
@@ -247,13 +425,20 @@ export async function sendMessage(formData: FormData) {
         throw new Error('Nicht eingeloggt');
     }
 
+    const filteredContent = filterContactInfo(content);
+
     await db.insert(messages).values({
         senderId,
         receiverId,
-        content,
+        taskId: taskId || null,
+        content: filteredContent,
     });
 
-    revalidatePath(`/messages/${receiverId}`);
+    const redirectPath = taskId
+        ? `/messages/${receiverId}?taskId=${taskId}`
+        : `/messages/${receiverId}`;
+
+    revalidatePath(redirectPath);
     revalidatePath('/messages');
 }
 
@@ -274,8 +459,123 @@ export async function markMessagesAsRead(partnerId: string) {
         );
 }
 
-import { subscriptionPlans } from '../lib/schema';
+export async function assignTask(taskId: string, helperId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
 
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    // Security: Check if user owns the task
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    if (!task || task.customerId !== userId) {
+        throw new Error('Nicht autorisiert oder Auftrag nicht gefunden');
+    }
+
+    await db.update(tasks)
+        .set({
+            helperId,
+            status: 'assigned'
+        })
+        .where(eq(tasks.id, taskId));
+
+    revalidatePath(`/tasks/${taskId}`);
+    revalidatePath('/profile');
+    revalidatePath(`/messages/${helperId}`);
+    revalidatePath('/messages');
+}
+
+export async function unassignTask(taskId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    if (!task || task.customerId !== userId) {
+        throw new Error('Nicht autorisiert');
+    }
+
+    const helperId = task.helperId;
+
+    await db.update(tasks)
+        .set({
+            helperId: null,
+            status: 'open'
+        })
+        .where(eq(tasks.id, taskId));
+
+    revalidatePath(`/tasks/${taskId}`);
+    revalidatePath('/profile');
+    if (helperId) revalidatePath(`/messages/${helperId}`);
+    revalidatePath('/messages');
+}
+
+export async function archiveConversation(partnerId: string, taskId: string | null) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    await db.insert(archivedConversations).values({
+        userId,
+        partnerId,
+        taskId
+    });
+
+    revalidatePath('/messages');
+}
+
+export async function updateActivity() {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (userId) {
+        await db.update(users)
+            .set({ lastSeenAt: new Date() })
+            .where(eq(users.id, userId));
+    }
+}
+
+export async function confirmTaskCompletion(taskId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    if (!task) throw new Error('Auftrag nicht gefunden');
+
+    let newStatus = task.status;
+
+    if (task.customerId === userId) {
+        // Seeker confirming
+        if (task.status === 'completed_by_helper') {
+            newStatus = 'closed';
+            // Trigger payout logic here (placeholder)
+            console.log(`💰 Payout triggered for task ${taskId}. Helper ${task.helperId} received funds minus commission.`);
+        } else {
+            newStatus = 'completed_by_seeker';
+        }
+    } else if (task.helperId === userId) {
+        // Helper confirming
+        if (task.status === 'completed_by_seeker') {
+            newStatus = 'closed';
+            // Trigger payout logic here (placeholder)
+            console.log(`💰 Payout triggered for task ${taskId}. Helper ${task.helperId} received funds minus commission.`);
+        } else {
+            newStatus = 'completed_by_helper';
+        }
+    } else {
+        throw new Error('Nicht autorisiert');
+    }
+
+    await db.update(tasks)
+        .set({ status: newStatus })
+        .where(eq(tasks.id, taskId));
+
+    revalidatePath(`/tasks/${taskId}`);
+    revalidatePath('/profile');
+}
 
 
 export async function updateSubscriptionPlan(formData: FormData) {
@@ -362,6 +662,7 @@ export async function updateUserProfile(formData: FormData) {
     const fullName = formData.get('fullName') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const bio = formData.get('bio') as string;
 
     if (!id || !email) return;
 
@@ -376,6 +677,7 @@ export async function updateUserProfile(formData: FormData) {
     const data: any = {
         fullName,
         email,
+        bio,
     };
 
     if (password && password.trim() !== '') {

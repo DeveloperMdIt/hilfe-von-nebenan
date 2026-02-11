@@ -1,0 +1,9 @@
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: ÔÜÖ´©Å  enable debug logging with { debug: true }
+--- Testing SMTP Configuration ---
+Host: hilfevonnebenan-de.netcup-mail.de
+Port: 465
+User: noreply@hilfevonnebenan.de
+Secure: true
+Ô£à SMTP Connection successful!
+Ô£à Email sent successfully!
+Message ID: <499035de-05d1-f2fd-802a-bbb854e4df38@hilfevonnebenan.de>

@@ -3,11 +3,15 @@ import { tasks, users, reviews } from '../../../lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
-import { submitReview } from '../../actions';
+import { cookies } from 'next/headers';
+import { confirmTaskCompletion, submitReview } from '../../actions';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const taskId = params.id;
+
+    const cookieStore = await cookies();
+    const currentUserId = cookieStore.get('userId')?.value;
 
     const result = await db
         .select({
@@ -26,6 +30,13 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
     }
 
     const { task, requester } = data;
+
+    // Fetch helper if assigned
+    let helper = null;
+    if (task.helperId) {
+        const helperResult = await db.select().from(users).where(eq(users.id, task.helperId)).limit(1);
+        helper = helperResult[0];
+    }
 
     // Fetch existing reviews for this task
     const taskReviews = await db
@@ -155,12 +166,66 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
 
                             <div className="flex flex-col gap-3">
                                 <Link
-                                    href={`/messages/${requester?.id}`}
-                                    className="w-full py-3 px-4 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-600 dark:hover:bg-amber-500 dark:hover:text-white transition-all"
+                                    href={`/messages/${requester?.id}?taskId=${task.id}`}
+                                    className="w-full py-3 px-4 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-600 dark:hover:bg-amber-500 dark:hover:text-white transition-all transition-colors shadow-sm"
                                 >
                                     <MessageSquare size={18} />
                                     Nachricht senden
                                 </Link>
+
+                                {/* Completion Workflow Buttons */}
+                                {task.status !== 'closed' && task.status !== 'open' && (
+                                    <>
+                                        {/* If I am the customer and it's not closed yet */}
+                                        {task.customerId === currentUserId && task.status !== 'completed_by_seeker' && (
+                                            <form action={async () => {
+                                                'use server';
+                                                await confirmTaskCompletion(task.id);
+                                            }}>
+                                                <button
+                                                    type="submit"
+                                                    className="w-full py-3 px-4 bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all shadow-sm"
+                                                >
+                                                    <CheckCircle2 size={18} />
+                                                    Als erledigt markieren
+                                                </button>
+                                            </form>
+                                        )}
+
+                                        {/* If I am the helper and I haven't confirmed yet */}
+                                        {task.helperId === currentUserId && task.status !== 'completed_by_helper' && (
+                                            <form action={async () => {
+                                                'use server';
+                                                await confirmTaskCompletion(task.id);
+                                            }}>
+                                                <button
+                                                    type="submit"
+                                                    className="w-full py-3 px-4 bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-all shadow-sm"
+                                                >
+                                                    <CheckCircle2 size={18} />
+                                                    Arbeit abgeschlossen
+                                                </button>
+                                            </form>
+                                        )}
+                                    </>
+                                )}
+
+                                {task.status === 'completed_by_helper' && task.customerId === currentUserId && (
+                                    <p className="text-xs text-amber-600 font-bold bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+                                        Helfer hat Auftrag als erledigt markiert. Bitte bestätigen.
+                                    </p>
+                                )}
+                                {task.status === 'completed_by_seeker' && task.helperId === currentUserId && (
+                                    <p className="text-xs text-amber-600 font-bold bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+                                        Auftraggeber hat Bestätigung angefordert.
+                                    </p>
+                                )}
+                                {task.status === 'closed' && (
+                                    <div className="py-3 px-4 bg-gray-100 dark:bg-zinc-800 text-gray-500 rounded-xl font-bold flex items-center justify-center gap-2">
+                                        <CheckCircle2 size={18} className="text-green-500" />
+                                        Abgeschlossen
+                                    </div>
+                                )}
                                 <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
                                     <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                                         <span>Status</span>

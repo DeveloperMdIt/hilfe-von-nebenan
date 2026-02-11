@@ -25,6 +25,7 @@ import { eq, and, count } from "drizzle-orm";
 
 import { CookieBanner } from "../components/ui/cookie-banner";
 import { Footer } from "../components/ui/footer";
+import { ActivityTracker } from "../components/utils/ActivityTracker";
 
 export default async function RootLayout({
   children,
@@ -42,6 +43,7 @@ export default async function RootLayout({
       fullName: users.fullName,
       email: users.email,
       role: users.role,
+      zipCode: users.zipCode,
     }).from(users).where(eq(users.id, userId));
     user = userResult[0] || null;
 
@@ -63,6 +65,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
+        <ActivityTracker />
         <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden">
           {children}

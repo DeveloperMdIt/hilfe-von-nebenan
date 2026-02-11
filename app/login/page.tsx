@@ -2,12 +2,97 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { loginUser } from '../actions';
-import { HeartHandshake } from 'lucide-react';
+import { loginUser, resendVerificationEmail } from '../actions';
+import { HeartHandshake, Mail, Loader2, X, CheckCircle2 } from 'lucide-react';
+import { useActionState, useState } from 'react';
 
 export default function LoginPage() {
+    const [state, formAction, isPending] = useActionState(loginUser, null);
+    const [showResendModal, setShowResendModal] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [resendMessage, setResendMessage] = useState('');
+
+    // Update modal visibility when login error is 'unverified'
+    if (state?.error === 'unverified' && !modalVisible && !showResendModal) {
+        setModalVisible(true);
+    }
+
+    const handleResend = async () => {
+        if (!state?.email) return;
+        setResendStatus('loading');
+        try {
+            await resendVerificationEmail(state.email);
+            setResendStatus('success');
+            setResendMessage('Der Verifizierungs-Link wurde erneut an deine E-Mail-Adresse gesendet.');
+        } catch (error: any) {
+            setResendStatus('error');
+            setResendMessage(error.message || 'Fehler beim Senden der Mail.');
+        }
+    };
+
     return (
         <div className="flex h-full overflow-hidden">
+            {/* Verification Modal */}
+            {(modalVisible || showResendModal) && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-gray-100 dark:border-zinc-800 space-y-6">
+                        <div className="flex justify-between items-start">
+                            <div className="h-14 w-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-500">
+                                <Mail size={28} />
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setModalVisible(false);
+                                    setShowResendModal(false);
+                                }}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white">E-Mail bestätigen</h3>
+                            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                Damit du Hilfe von Nebenan nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen. Wir haben dir einen Link an <span className="font-bold text-gray-900 dark:text-white">{state?.email}</span> gesendet.
+                            </p>
+                        </div>
+
+                        {resendStatus === 'success' ? (
+                            <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-4 rounded-xl flex gap-3 items-center text-sm font-medium">
+                                <CheckCircle2 size={18} />
+                                {resendMessage}
+                            </div>
+                        ) : resendStatus === 'error' ? (
+                            <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl text-sm font-medium">
+                                {resendMessage}
+                            </div>
+                        ) : null}
+
+                        <div className="flex flex-col gap-3 pt-2">
+                            <button
+                                onClick={handleResend}
+                                disabled={resendStatus === 'loading' || resendStatus === 'success'}
+                                className="flex items-center justify-center gap-2 w-full py-4 px-6 bg-amber-600 text-white rounded-2xl font-bold hover:bg-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-600/20"
+                            >
+                                {resendStatus === 'loading' ? <Loader2 size={18} className="animate-spin" /> : null}
+                                Link erneut senden
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setModalVisible(false);
+                                    setShowResendModal(false);
+                                }}
+                                className="py-4 px-6 text-gray-500 font-bold hover:text-gray-700 dark:hover:text-white transition-colors"
+                            >
+                                Schließen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Left Side - Image (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-1/2 relative bg-amber-100">
                 <Image
@@ -44,7 +129,13 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    <form action={loginUser} className="space-y-6">
+                    {state?.error && state.error !== 'unverified' && (
+                        <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium">
+                            {state.error}
+                        </div>
+                    )}
+
+                    <form action={formAction} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200">
                                 E-Mail Adresse
@@ -85,9 +176,10 @@ export default function LoginPage() {
                         <div>
                             <button
                                 type="submit"
-                                className="flex w-full justify-center rounded-xl bg-amber-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-lg shadow-amber-600/20 hover:bg-amber-500 hover:shadow-amber-600/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 transition-all duration-200 transform hover:-translate-y-0.5"
+                                disabled={isPending}
+                                className="flex w-full justify-center rounded-xl bg-amber-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-lg shadow-amber-600/20 hover:bg-amber-500 hover:shadow-amber-600/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                Anmelden
+                                {isPending ? <Loader2 className="animate-spin" size={20} /> : 'Anmelden'}
                             </button>
                         </div>
                     </form>

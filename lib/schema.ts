@@ -18,6 +18,25 @@ export const users = pgTable('users', {
     acceptedPrivacyAt: timestamp('accepted_privacy_at', { withTimezone: true }),
     termsVersion: varchar('terms_version', { length: 20 }),
     ipAddress: varchar('ip_address', { length: 45 }), // IPv6 support
+    bio: text('bio'), // "Was der User bereit ist zu machen" / Skillset
+    zipCode: varchar('zip_code', { length: 10 }), // For PLZ-based waiting list thresholds
+    verificationToken: text('verification_token'),
+    emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
+    isActive: boolean('is_active').default(true),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+});
+
+export const archivedConversations = pgTable('archived_conversations', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id).notNull(),
+    partnerId: uuid('partner_id').references(() => users.id).notNull(),
+    taskId: uuid('task_id').references(() => tasks.id), // Nullable for general chats
+    archivedAt: timestamp('archived_at', { withTimezone: true }).defaultNow(),
+});
+
+export const zipCodeActivations = pgTable('zip_code_activations', {
+    zipCode: varchar('zip_code', { length: 10 }).primaryKey(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }).defaultNow(),
 });
 
 export const reviews = pgTable('reviews', {
@@ -38,8 +57,10 @@ export const tasks = pgTable('tasks', {
     title: text('title').notNull(),
     description: text('description').notNull(),
     category: varchar('category', { length: 50 }),
-    status: varchar('status', { length: 20 }).default('open'),
+    status: varchar('status', { length: 50 }).default('open'), // 'open', 'assigned', 'completed_by_helper', 'completed_by_seeker', 'closed'
     priceCents: integer('price_cents').notNull(),
+    commissionCents: integer('commission_cents'),
+    payoutCents: integer('payout_cents'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
@@ -60,6 +81,7 @@ export const messages = pgTable('messages', {
     id: uuid('id').defaultRandom().primaryKey(),
     senderId: uuid('sender_id').references(() => users.id).notNull(),
     receiverId: uuid('receiver_id').references(() => users.id).notNull(),
+    taskId: uuid('task_id').references(() => tasks.id), // New: messages are now task-based
     content: text('content').notNull(),
     isRead: boolean('is_read').default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

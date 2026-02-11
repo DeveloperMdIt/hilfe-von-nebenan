@@ -40,6 +40,25 @@ export default function ProfileForm({ user }: { user: any }) {
                         </div>
                     </div>
 
+                    <div className="sm:col-span-6">
+                        <label htmlFor="bio" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                            Über mich / Was ich anbiete
+                        </label>
+                        <div className="mt-2">
+                            <textarea
+                                id="bio"
+                                name="bio"
+                                rows={3}
+                                defaultValue={user.bio || ''}
+                                placeholder="Beschreibe kurz, was du kannst oder wobei du helfen möchtest..."
+                                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700"
+                            />
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                            Wird auf deinem öffentlichen Profil angezeigt.
+                        </p>
+                    </div>
+
                     <div className="sm:col-span-4">
                         <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                             Neues Passwort (optional)
