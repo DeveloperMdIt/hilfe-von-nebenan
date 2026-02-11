@@ -10,7 +10,7 @@ DUMP_FILE="db_dump_$(date +%Y%m%d_%H%M%S).sql"
 echo "⏳ Dumping local database..."
 # Use pg_dump to create a backup
 # We use --clean and --if-exists to make the restore easier on the other side
-pg_dump "$LOCAL_DB_URL" --clean --if-exists --no-owner --no-privileges > "$DUMP_FILE"
+pg_dump -d "$LOCAL_DB_URL" --clean --if-exists --no-owner --no-privileges > "$DUMP_FILE"
 
 if [ $? -ne 0 ]; then
     echo "❌ Local dump failed!"

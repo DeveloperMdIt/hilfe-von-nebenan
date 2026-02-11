@@ -272,9 +272,6 @@ export async function markMessagesAsRead(partnerId: string) {
                 eq(messages.isRead, false)
             )
         );
-
-    revalidatePath('/messages');
-    revalidatePath('/layout'); // To clear header cache if applicable
 }
 
 import { subscriptionPlans } from '../lib/schema';

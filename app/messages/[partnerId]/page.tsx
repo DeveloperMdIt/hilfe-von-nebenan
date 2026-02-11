@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send, User, Crown } from 'lucide-react';
 import { sendMessage, markMessagesAsRead } from '@/app/actions';
+import { RefreshOnMount } from '@/components/ui/refresh-on-mount';
 
 export default async function ChatPage({ params }: { params: Promise<{ partnerId: string }> }) {
     const cookieStore = await cookies();
@@ -45,6 +46,7 @@ export default async function ChatPage({ params }: { params: Promise<{ partnerId
 
     return (
         <div className="flex flex-col h-[calc(100vh-80px)] max-w-4xl mx-auto">
+            <RefreshOnMount />
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex items-center gap-3 bg-white dark:bg-zinc-900 sticky top-0 z-10">
                 <Link href="/messages" className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg">
