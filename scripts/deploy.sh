@@ -19,7 +19,11 @@ rsync -avz --exclude-from='.dockerignore' ./ $SERVER_USER@$SERVER_IP:$APP_DIR
 echo "🔄 Restarting containers on server..."
 ssh $SERVER_USER@$SERVER_IP "cd $APP_DIR && docker compose up -d --build"
 
-# 4. Run Seed Script (Idempotent)
+# 4. Run Migrations
+echo "📦 Running database migrations..."
+ssh $SERVER_USER@$SERVER_IP "cd $APP_DIR && docker compose exec -T hilfe-app npx tsx scripts/migrate.ts"
+
+# 5. Run Seed Script (Idempotent)
 echo "🌱 Seeding plans (if needed)..."
 ssh $SERVER_USER@$SERVER_IP "cat $APP_DIR/scripts/seed-plans.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan"
 
