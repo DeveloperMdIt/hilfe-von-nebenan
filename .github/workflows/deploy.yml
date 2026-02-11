@@ -28,3 +28,5 @@ jobs:
               git pull origin main
             fi
             docker compose up -d --build
+            sleep 10
+            cat scripts/seed-plans.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan
