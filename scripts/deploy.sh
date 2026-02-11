@@ -30,4 +30,7 @@ ssh $SERVER_USER@$SERVER_IP "cat $APP_DIR/scripts/seed-plans.sql | docker compos
 echo "🌱 Seeding users (production_seed.sql)..."
 ssh $SERVER_USER@$SERVER_IP "cat $APP_DIR/production_seed.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan"
 
+# OPTIONAL: To sync COMPLETE local database to production, run:
+# ./scripts/sync-local-db-to-prod.sh
+
 echo "✅ Deployment finished!"
