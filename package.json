@@ -6,7 +6,8 @@
     "dev": "next dev -p 3009",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:plans": "tsx scripts/seed-plans.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
