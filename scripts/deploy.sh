@@ -27,4 +27,7 @@ ssh $SERVER_USER@$SERVER_IP "cd $APP_DIR && docker compose exec -T hilfe-app npx
 echo "🌱 Seeding plans (if needed)..."
 ssh $SERVER_USER@$SERVER_IP "cat $APP_DIR/scripts/seed-plans.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan"
 
+echo "🌱 Seeding users (production_seed.sql)..."
+ssh $SERVER_USER@$SERVER_IP "cat $APP_DIR/production_seed.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan"
+
 echo "✅ Deployment finished!"

@@ -154,10 +154,13 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                             <p className="text-sm text-gray-500 font-medium mb-6">Mitglied seit {requester?.createdAt ? new Date(requester.createdAt).getFullYear() : '2026'}</p>
 
                             <div className="flex flex-col gap-3">
-                                <button className="w-full py-3 px-4 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-600 dark:hover:bg-amber-500 dark:hover:text-white transition-all">
+                                <Link
+                                    href={`/messages/${requester?.id}`}
+                                    className="w-full py-3 px-4 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-600 dark:hover:bg-amber-500 dark:hover:text-white transition-all"
+                                >
                                     <MessageSquare size={18} />
                                     Nachricht senden
-                                </button>
+                                </Link>
                                 <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
                                     <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                                         <span>Status</span>
