@@ -74,12 +74,12 @@ export function Header({ user }: { user?: { fullName?: string | null; role?: str
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-4 items-center">
                     {user ? (
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
+                            <Link href="/profile" className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-900 p-2 rounded-lg transition-colors">
                                 <div className="h-8 w-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
                                     <span className="font-bold text-xs">{user.fullName?.[0] || 'U'}</span>
                                 </div>
                                 <span className="text-sm font-semibold">{user.fullName}</span>
-                            </div>
+                            </Link>
                             <form action={logoutUser}>
                                 <button
                                     type="submit"

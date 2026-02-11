@@ -61,7 +61,15 @@ export async function registerUser(formData: FormData) {
     const email = formData.get('email') as string;
     const role = 'customer'; // Default role
 
-    if (!name || !email) return;
+    const consent = formData.get('consent');
+
+    if (!name || !email || !consent) {
+        throw new Error('Bitte füllen Sie alle Pflichtfelder aus.');
+    }
+
+    const cookieStore = await cookies(); // Used later for session
+    const headersList = await headers();
+    const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
 
     // Check if user exists (mock check, or handle unique constraint error)
     // For now, just try insert
@@ -71,6 +79,10 @@ export async function registerUser(formData: FormData) {
             fullName: name,
             role,
             // default trustLevel, isVerified etc from schema defaults
+            acceptedTermsAt: new Date(),
+            acceptedPrivacyAt: new Date(),
+            termsVersion: 'v1.0',
+            ipAddress: ipAddress,
         });
     } catch (e) {
         console.error('Registration error:', e);
@@ -81,7 +93,7 @@ export async function registerUser(formData: FormData) {
     redirect('/login');
 }
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 export async function loginUser(formData: FormData) {
     const email = formData.get('email') as string;
@@ -202,8 +214,10 @@ export async function updateSettings(formData: FormData) {
         });
     };
 
-    if (rawData.stripePublicKey) await saveSetting('stripe_public_key', rawData.stripePublicKey as string);
-    if (rawData.stripeSecretKey) await saveSetting('stripe_secret_key', rawData.stripeSecretKey as string);
+    if (rawData.stripeLivePublicKey) await saveSetting('stripe_live_public_key', rawData.stripeLivePublicKey as string);
+    if (rawData.stripeLiveSecretKey) await saveSetting('stripe_live_secret_key', rawData.stripeLiveSecretKey as string);
+    if (rawData.stripeSandboxPublicKey) await saveSetting('stripe_sandbox_public_key', rawData.stripeSandboxPublicKey as string);
+    if (rawData.stripeSandboxSecretKey) await saveSetting('stripe_sandbox_secret_key', rawData.stripeSandboxSecretKey as string);
     await saveSetting('stripe_test_mode', rawData.stripeTestMode === 'on' ? 'true' : 'false');
 
     // Modules
@@ -322,4 +336,35 @@ export async function deleteReview(formData: FormData) {
 
     revalidatePath('/admin/reviews');
     if (taskId) revalidatePath(`/tasks/${taskId}`);
+}
+
+export async function updateUserProfile(formData: FormData) {
+    const id = formData.get('id') as string;
+    const fullName = formData.get('fullName') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!id || !email) return;
+
+    // Security check: Ensure user is updating their own profile
+    const cookieStore = await cookies();
+    const sessionUserId = cookieStore.get('userId')?.value;
+
+    if (!sessionUserId || sessionUserId !== id) {
+        throw new Error('Nicht autorisiert');
+    }
+
+    const data: any = {
+        fullName,
+        email,
+    };
+
+    if (password && password.trim() !== '') {
+        data.password = password;
+    }
+
+    await db.update(users).set(data).where(eq(users.id, id));
+
+    revalidatePath('/profile');
+    // redirect('/profile'); // Optional, to refresh page content fully
 }

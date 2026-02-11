@@ -23,6 +23,9 @@ import { db } from "../lib/db";
 import { users } from "../lib/schema";
 import { eq } from "drizzle-orm";
 
+import { CookieBanner } from "../components/ui/cookie-banner";
+import { Footer } from "../components/ui/footer";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -45,12 +48,14 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
         <Header user={user} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden">
           {children}
+          <Footer />
         </main>
+        <CookieBanner />
       </body>
     </html>
   );

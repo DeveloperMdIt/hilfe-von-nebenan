@@ -55,33 +55,71 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                         <CreditCard size={28} />
                     </div>
 
-                    <h2 className="text-xl font-black mb-2 tracking-tight">Zahlung</h2>
+                    <h2 className="text-xl font-black mb-2 tracking-tight">Zahlung (Stripe)</h2>
                     <p className="text-sm text-gray-500 mb-8 leading-snug">
-                        Verwalte deine Stripe-Verbindung und Zahlungskonfiguration.
+                        Hier hinterlegst du deine Schlüssel für Test- und Live-Zahlungen.
                     </p>
 
-                    <div className="flex flex-col gap-6">
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Stripe Public Key</label>
-                            <input
-                                type="text"
-                                name="stripePublicKey"
-                                defaultValue={getSetting('stripe_public_key') || ''}
-                                placeholder="pk_test_..."
-                                className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
-                            />
+                    <div className="flex flex-col gap-8">
+                        {/* Live Mode Section */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span className="text-xs font-black uppercase tracking-widest text-gray-500">Live Modus (Produktion)</span>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Live Public Key</label>
+                                <input
+                                    type="text"
+                                    name="stripeLivePublicKey"
+                                    defaultValue={getSetting('stripe_live_public_key') || ''}
+                                    placeholder="pk_live_..."
+                                    className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Live Secret Key</label>
+                                <input
+                                    type="password"
+                                    name="stripeLiveSecretKey"
+                                    defaultValue={getSetting('stripe_live_secret_key') || ''}
+                                    placeholder="sk_live_..."
+                                    className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Stripe Secret Key</label>
-                            <input
-                                type="password"
-                                name="stripeSecretKey"
-                                defaultValue={getSetting('stripe_secret_key') || ''}
-                                placeholder="sk_test_..."
-                                className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
-                            />
+
+                        <hr className="border-gray-100 dark:border-zinc-800" />
+
+                        {/* Sandbox Section */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="h-2 w-2 rounded-full bg-blue-400"></div>
+                                <span className="text-xs font-black uppercase tracking-widest text-gray-500">Sandbox (Testumgebung)</span>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Sandbox Public Key</label>
+                                <input
+                                    type="text"
+                                    name="stripeSandboxPublicKey"
+                                    defaultValue={getSetting('stripe_sandbox_public_key') || ''}
+                                    placeholder="pk_test_..."
+                                    className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Sandbox Secret Key</label>
+                                <input
+                                    type="password"
+                                    name="stripeSandboxSecretKey"
+                                    defaultValue={getSetting('stripe_sandbox_secret_key') || ''}
+                                    placeholder="sk_test_..."
+                                    className="w-full rounded-xl border border-gray-200 dark:border-zinc-800 p-3 bg-gray-50/50 dark:bg-zinc-950/50 font-mono text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 mt-2">
+
+                        <div className="flex items-center gap-3 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30 mt-2">
                             <input
                                 type="checkbox"
                                 id="testmode"
@@ -89,7 +127,10 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                                 defaultChecked={getSetting('stripe_test_mode') !== 'false'}
                                 className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500 transition-all cursor-pointer"
                             />
-                            <label htmlFor="testmode" className="text-xs font-bold text-blue-800 dark:text-blue-300 cursor-pointer">Test-Modus aktiv (Sandbox)</label>
+                            <div className="flex flex-col">
+                                <label htmlFor="testmode" className="text-xs font-black text-amber-800 dark:text-amber-300 cursor-pointer uppercase tracking-tight">Test-Modus aktiv</label>
+                                <p className="text-[10px] text-amber-700/60 dark:text-amber-400/60 leading-tight">Wenn aktiv, werden Sandbox-Schlüssel verwendet.</p>
+                            </div>
                         </div>
                     </div>
                 </div>

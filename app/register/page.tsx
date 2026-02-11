@@ -74,6 +74,23 @@ export default function RegisterPage() {
                         </div>
 
 
+                        <div className="flex items-start">
+                            <div className="flex h-6 items-center">
+                                <input
+                                    id="consent"
+                                    name="consent"
+                                    type="checkbox"
+                                    required
+                                    className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-600 dark:border-zinc-700 dark:bg-zinc-800 dark:ring-offset-zinc-900"
+                                />
+                            </div>
+                            <div className="ml-3 text-sm leading-6">
+                                <label htmlFor="consent" className="font-medium text-gray-900 dark:text-gray-200">
+                                    Ich habe die <Link href="/agb" className="text-amber-600 hover:text-amber-500 underline" target="_blank">AGB</Link> und die <Link href="/datenschutz" className="text-amber-600 hover:text-amber-500 underline" target="_blank">Datenschutzerklärung</Link> gelesen und stimme diesen zu.
+                                </label>
+                            </div>
+                        </div>
+
                         <div>
                             <button
                                 type="submit"

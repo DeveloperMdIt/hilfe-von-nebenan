@@ -13,6 +13,11 @@ export const users = pgTable('users', {
     planId: uuid('plan_id'),
     subscriptionExpiresAt: timestamp('subscription_expires_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    // Consent & Legal
+    acceptedTermsAt: timestamp('accepted_terms_at', { withTimezone: true }),
+    acceptedPrivacyAt: timestamp('accepted_privacy_at', { withTimezone: true }),
+    termsVersion: varchar('terms_version', { length: 20 }),
+    ipAddress: varchar('ip_address', { length: 45 }), // IPv6 support
 });
 
 export const reviews = pgTable('reviews', {

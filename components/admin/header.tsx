@@ -31,7 +31,10 @@ export async function AdminHeader() {
 
             {/* Right side - Actions & Profile */}
             <div className="flex items-center gap-6">
-                <button className="text-gray-400 hover:text-amber-600 transition-colors relative">
+                <button
+                    className="text-gray-400 hover:text-amber-600 transition-colors relative"
+                    title="Benachrichtigungs-System (Aktuell Platzhalter für zukünftige Updates)"
+                >
                     <Bell size={20} />
                     <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
                 </button>

@@ -29,7 +29,10 @@ export default async function AdminReviewsPage() {
                     <h1 className="text-3xl font-black text-gray-900 dark:text-white">Bewertungs-Management</h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Hier können Sie Nutzerbewertungen moderieren und verwalten.</p>
                 </div>
-                <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-4 py-2 rounded-xl border border-amber-200 dark:border-amber-800/50 flex items-center gap-2 text-sm font-bold">
+                <div
+                    className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-4 py-2 rounded-xl border border-amber-200 dark:border-amber-800/50 flex items-center gap-2 text-sm font-bold cursor-help"
+                    title="In diesem Modus kannst du alle Bewertungen sehen und bei Bedarf (z.B. Beleidigungen) löschen."
+                >
                     <ShieldAlert size={18} />
                     Moderations-Modus aktiv
                 </div>
