@@ -98,8 +98,10 @@ export default async function RootLayout({
       >
         <ActivityTracker />
         <Header user={user} unreadCount={unreadCount} />
-        <main className="flex-1 w-full overflow-y-auto overflow-x-hidden">
-          {children}
+        <main className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col">
+          <div className="flex-1">
+            {children}
+          </div>
           <Footer />
         </main>
         <CookieBanner />
