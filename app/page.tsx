@@ -55,9 +55,9 @@ export default async function Home() {
   ];
 
   return (
-    <div className="h-full min-h-full overflow-hidden flex flex-col font-[family-name:var(--font-geist-sans)] bg-amber-50/50 dark:bg-zinc-950">
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-8 items-center h-full max-h-[800px]">
+    <div className="flex flex-col font-[family-name:var(--font-geist-sans)] bg-amber-50/50 dark:bg-zinc-950">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 py-12 lg:py-24">
+        <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-12 items-center min-h-[600px]">
 
           {/* Left: Content */}
           <div className="flex flex-col justify-center space-y-8 z-10 p-4">
