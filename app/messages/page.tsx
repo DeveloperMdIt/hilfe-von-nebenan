@@ -87,7 +87,10 @@ export default async function MessagesPage() {
             ) : (
                 <div className="grid gap-4">
                     {conversationList.map(({ partner, taskId, taskTitle, lastMessage, unreadCount }) => {
-                        const isOnline = partner?.lastSeenAt && (new Date().getTime() - new Date(partner.lastSeenAt).getTime()) < 5 * 60 * 1000;
+                        const isOnline = partner?.lastSeenAt && (new Date().getTime() - new Date(partner.lastSeenAt).getTime()) < 10 * 60 * 1000;
+                        const lastSeenText = partner?.lastSeenAt
+                            ? `Zuletzt online: ${new Date(partner.lastSeenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                            : 'Offline';
 
                         return (
                             <div key={`${partner.id}-${taskId}`} className="relative group">
@@ -113,7 +116,7 @@ export default async function MessagesPage() {
                                                     </h3>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className={`text-[10px] font-black uppercase tracking-wider ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                                                            {isOnline ? 'Online' : 'Offline'}
+                                                            {isOnline ? 'Online' : lastSeenText}
                                                         </span>
                                                         <span className="text-gray-300">•</span>
                                                         <span className="text-xs font-bold text-gray-500">mit {partner?.fullName || 'Unbekannt'}</span>

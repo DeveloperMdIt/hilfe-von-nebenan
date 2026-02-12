@@ -134,3 +134,51 @@ export async function sendNeighborInviteEmail(toEmail: string, senderName: strin
         throw new Error('E-Mail konnte nicht versendet werden.');
     }
 }
+export async function sendPStTGWarningEmail(to: string, name: string, stats: { transactions: number, revenueCents: number }) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3009';
+    const revenueEur = (stats.revenueCents / 100).toFixed(2);
+
+    const mailOptions = {
+        from: `"Finanz-Team | Hilfe von Nebenan" <${process.env.SMTP_FROM}>`,
+        to,
+        subject: 'Wichtiger Hinweis zu deiner steuerlichen Meldepflicht (PStTG) | Hilfe von Nebenan',
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #fca5a5; border-radius: 24px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="background-color: #ef4444; width: 64px; height: 64px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 32px; line-height: 64px;">⚠</div>
+                </div>
+                <h2 style="color: #111827; text-align: center; font-size: 24px; font-weight: 800; margin-bottom: 20px;">Wichtiger Hinweis für dich, ${name}</h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                    Wir möchten dich darüber informieren, dass du im laufenden Kalenderjahr bald die gesetzlichen Schwellenwerte für die Meldepflicht nach dem <strong>Plattformen-Steuertransparenzgesetz (PStTG)</strong> erreichst.
+                </p>
+                <div style="background-color: #fef2f2; border-radius: 20px; padding: 25px; margin: 30px 0; border: 1px solid #fee2e2;">
+                    <h4 style="color: #991b1b; margin-top: 0; margin-bottom: 15px;">Deine aktuellen Werte für das Kalenderjahr:</h4>
+                    <ul style="color: #b91c1c; margin: 0; padding-left: 20px;">
+                        <li>Abgeschlossene Hilfen: <strong>${stats.transactions}</strong> (Grenze: 30)</li>
+                        <li>Gesamtumsatz: <strong>${revenueEur} €</strong> (Grenze: 2.000 €)</li>
+                    </ul>
+                </div>
+                <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+                    <strong>Keine Sorge:</strong> Nachbarschaftshilfe ist in der Regel bis zu gewissen Freibeträgen steuerfrei. Wir sind jedoch gesetzlich verpflichtet, dem Bundeszentralamt für Steuern (BZSt) Daten zu übermitteln, sobald die Grenze von 30 Transaktionen oder 2.000 € Umsatz überschritten wird.
+                </p>
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="${baseUrl}/profile" style="background-color: #111827; color: white; padding: 18px 36px; text-decoration: none; border-radius: 16px; font-weight: 900; font-size: 16px; display: inline-block;">Profil überprüfen</a>
+                </div>
+                <p style="color: #9ca3af; font-size: 12px; line-height: 1.5;">
+                    Bei Fragen wende dich bitte an deinen Steuerberater. Wir stellen dir am Jahresende eine übersichtliche Aufstellung deiner Transaktionen zur Verfügung, die du beim Finanzamt einreichen kannst.
+                </p>
+                <hr style="border: 0; border-top: 1px solid #f3f4f6; margin: 40px 0;">
+                <p style="font-size: 11px; color: #d1d5db; text-align: center;">
+                    Dies ist eine gesetzlich erforderliche Information von Hilfe von Nebenan.
+                </p>
+            </div>
+        `,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`PStTG Warning sent to ${to}`);
+    } catch (error) {
+        console.error('Error sending PStTG warning email:', error);
+    }
+}

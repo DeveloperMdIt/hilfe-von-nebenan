@@ -2,8 +2,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
-import { users } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { users, tags, userTags } from '@/lib/schema';
+import { eq, and } from 'drizzle-orm';
 import ProfileForm from '@/components/profile/profile-form';
 import UserTaskList from '@/components/profile/user-task-list';
 
@@ -22,6 +22,18 @@ export default async function ProfilePage() {
         redirect('/login');
     }
 
+    // Fetch tags
+    const allTags = await db.select().from(tags).execute();
+    const userTagsResult = await db.select({ tagId: userTags.tagId })
+        .from(userTags)
+        .where(eq(userTags.userId, userId))
+        .execute();
+
+    const userTagIds = userTagsResult.map(ut => ut.tagId);
+
+    // Get unique categories
+    const categories = Array.from(new Set(allTags.map(t => t.category)));
+
     return (
         <div className="bg-white dark:bg-zinc-950 py-12 sm:py-24">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -36,7 +48,12 @@ export default async function ProfilePage() {
                     {/* Left Column: Profile Data */}
                     <div>
                         <h3 className="text-xl font-semibold leading-7 text-gray-900 dark:text-white mb-6">Persönliche Daten</h3>
-                        <ProfileForm user={user} />
+                        <ProfileForm
+                            user={user}
+                            allTags={allTags}
+                            userTagIds={userTagIds}
+                            categories={categories}
+                        />
 
                         <div className="mt-10 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
                             <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Dein Status</h4>

@@ -1,0 +1,37 @@
+
+> hilfe-von-nebenan@0.1.0 build
+> next build
+
+ÔÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\Micha-PC\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\Micha-PC\.gemini\antigravity\scratch\hilfe-von-nebenan\package-lock.json
+   * C:\Users\Micha-PC\.gemini\antigravity\scratch\package-lock.json
+
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 3.1s
+  Running TypeScript ...
+Failed to compile.
+
+./inspect-local-db.ts:9:25
+Type error: No overload matches this call.
+  Overload 1 of 2, '(options?: Options<{}> | undefined): Sql<{}>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'Options<{}> | undefined'.
+      Type 'string' has no properties in common with type 'Options<{}>'.
+  Overload 2 of 2, '(url: string, options?: Options<{}> | undefined): Sql<{}>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+
+   7 | dotenv.config({ path: '.env.local' });
+   8 |
+>  9 | const client = postgres(process.env.DATABASE_URL);
+     |                         ^
+  10 | const db = drizzle(client);
+  11 |
+  12 | async function inspect() {
+Next.js build worker exited with code: 1 and signal: null

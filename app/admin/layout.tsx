@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star } from 'lucide-react';
+import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star, FileText } from 'lucide-react';
 import { AdminHeader } from '../../components/admin/header';
 
 export default function AdminLayout({
@@ -15,6 +15,8 @@ export default function AdminLayout({
         { name: 'Abrechnung', href: '/admin/billing', icon: CreditCard },
         { name: 'Email Vorlagen', href: '/admin/email-templates', icon: Mail },
         { name: 'Abo-Modelle', href: '/admin/plans', icon: CreditCard },
+        { name: 'Tags & Kategorien', href: '/admin/tags', icon: ListTodo },
+        { name: 'Steuermeldung (PStTG)', href: '/admin/tax-reporting', icon: FileText },
         { name: 'Einstellungen', href: '/admin/settings', icon: Settings },
     ];
 

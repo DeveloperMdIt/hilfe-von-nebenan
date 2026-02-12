@@ -14,8 +14,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hilfe von Nebenan",
-  description: "Deine Plattform für Nachbarschaftshilfe.",
+  title: {
+    default: "Hilfe von Nebenan",
+    template: "%s | Hilfe von Nebenan"
+  },
+  description: "Deine Plattform für Nachbarschaftshilfe. Einfach, lokal und sicher Hilfe finden oder anbieten.",
+  keywords: ["Nachbarschaftshilfe", "Nebenan", "Hilfe", "Unterstützung", "Lokal"],
+  authors: [{ name: "Hilfe von Nebenan Team" }],
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    url: "https://hilfe-von-nebenan.de",
+    siteName: "Hilfe von Nebenan",
+    title: "Hilfe von Nebenan - Deine Nachbarschaftsplattform",
+    description: "Verbinde dich mit deinen Nachbarn, biete Hilfe an oder finde Unterstützung in deinem Viertel.",
+    images: [
+      {
+        url: "/hero.png",
+        width: 1200,
+        height: 630,
+        alt: "Hilfe von Nebenan Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hilfe von Nebenan",
+    description: "Deine Plattform für Nachbarschaftshilfe.",
+    images: ["/hero.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 import { cookies } from "next/headers";
@@ -61,7 +92,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="de">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >

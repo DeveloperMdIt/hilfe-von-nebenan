@@ -1,15 +1,15 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations } from '@/lib/schema';
+import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations, tags, userTags } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq, or, and, desc, sql, count } from 'drizzle-orm';
+import { eq, or, and, desc, sql, count, sum, lte, gte } from 'drizzle-orm';
 import { cookies, headers } from 'next/headers';
 import { filterContactInfo } from '@/lib/utils';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail } from '@/lib/mailer';
+import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, sendPStTGWarningEmail } from '@/lib/mailer';
 
 export async function createTask(formData: FormData) {
     const title = formData.get('title') as string;
@@ -304,6 +304,10 @@ export async function updateUser(formData: FormData) {
     const password = formData.get('password') as string;
     const isHelperBadge = formData.get('isHelperBadge') === 'on';
     const isActive = formData.get('isActive') === 'on';
+    const streetAddress = formData.get('streetAddress') as string;
+    const dateOfBirth = formData.get('dateOfBirth') as string;
+    const taxId = formData.get('taxId') as string;
+    const bankDetails = formData.get('bankDetails') as string;
 
     if (!id || !email) return;
 
@@ -313,7 +317,14 @@ export async function updateUser(formData: FormData) {
         role,
         isHelperBadge,
         isActive,
+        streetAddress,
+        taxId,
+        bankDetails,
     };
+
+    if (dateOfBirth) {
+        data.dateOfBirth = new Date(dateOfBirth);
+    }
 
     if (password && password.trim() !== '') {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -536,6 +547,30 @@ export async function updateActivity() {
     }
 }
 
+export async function getPStTGStats(userId: string, year: number) {
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+
+    const result = await db.select({
+        count: count(),
+        totalRevenue: sum(tasks.priceCents)
+    })
+        .from(tasks)
+        .where(
+            and(
+                eq(tasks.helperId, userId),
+                eq(tasks.status, 'closed'),
+                gte(tasks.createdAt, startOfYear),
+                lte(tasks.createdAt, endOfYear)
+            )
+        );
+
+    return {
+        transactions: Number(result[0]?.count || 0),
+        revenueCents: Number(result[0]?.totalRevenue || 0)
+    };
+}
+
 export async function confirmTaskCompletion(taskId: string) {
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
@@ -551,8 +586,6 @@ export async function confirmTaskCompletion(taskId: string) {
         // Seeker confirming
         if (task.status === 'completed_by_helper') {
             newStatus = 'closed';
-            // Trigger payout logic here (placeholder)
-            console.log(`💰 Payout triggered for task ${taskId}. Helper ${task.helperId} received funds minus commission.`);
         } else {
             newStatus = 'completed_by_seeker';
         }
@@ -560,8 +593,6 @@ export async function confirmTaskCompletion(taskId: string) {
         // Helper confirming
         if (task.status === 'completed_by_seeker') {
             newStatus = 'closed';
-            // Trigger payout logic here (placeholder)
-            console.log(`💰 Payout triggered for task ${taskId}. Helper ${task.helperId} received funds minus commission.`);
         } else {
             newStatus = 'completed_by_helper';
         }
@@ -572,6 +603,29 @@ export async function confirmTaskCompletion(taskId: string) {
     await db.update(tasks)
         .set({ status: newStatus })
         .where(eq(tasks.id, taskId));
+
+    // PStTG Logic: Check thresholds if task was closed
+    if (newStatus === 'closed' && task.helperId) {
+        const currentYear = new Date().getFullYear();
+        const stats = await getPStTGStats(task.helperId, currentYear);
+
+        // Thresholds: 25 transactions OR 150.000 cents (1500 EUR)
+        const THRESHOLD_TX = 25;
+        const THRESHOLD_REVENUE = 150000;
+
+        if (stats.transactions >= THRESHOLD_TX || stats.revenueCents >= THRESHOLD_REVENUE) {
+            const [helper] = await db.select().from(users).where(eq(users.id, task.helperId));
+
+            // Send warning if not already sent this year
+            if (helper && helper.psttgLastWarningYear !== currentYear) {
+                await sendPStTGWarningEmail(helper.email, helper.fullName || 'Nachbar', stats);
+                await db.update(users)
+                    .set({ psttgLastWarningYear: currentYear })
+                    .where(eq(users.id, task.helperId));
+                console.log(`✉ PStTG Warning sent to helper ${task.helperId}`);
+            }
+        }
+    }
 
     revalidatePath(`/tasks/${taskId}`);
     revalidatePath('/profile');
@@ -663,6 +717,10 @@ export async function updateUserProfile(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const bio = formData.get('bio') as string;
+    const streetAddress = formData.get('streetAddress') as string;
+    const dateOfBirth = formData.get('dateOfBirth') as string;
+    const taxId = formData.get('taxId') as string;
+    const bankDetails = formData.get('bankDetails') as string;
 
     if (!id || !email) return;
 
@@ -678,7 +736,14 @@ export async function updateUserProfile(formData: FormData) {
         fullName,
         email,
         bio,
+        streetAddress,
+        taxId,
+        bankDetails,
     };
+
+    if (dateOfBirth) {
+        data.dateOfBirth = new Date(dateOfBirth);
+    }
 
     if (password && password.trim() !== '') {
         data.password = password;
@@ -688,4 +753,96 @@ export async function updateUserProfile(formData: FormData) {
 
     revalidatePath('/profile');
     // redirect('/profile'); // Optional, to refresh page content fully
+}
+
+export async function toggleUserTag(tagId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    // Check if link exists
+    const [existing] = await db.select()
+        .from(userTags)
+        .where(and(eq(userTags.userId, userId), eq(userTags.tagId, tagId)));
+
+    if (existing) {
+        await db.delete(userTags)
+            .where(and(eq(userTags.userId, userId), eq(userTags.tagId, tagId)));
+    } else {
+        await db.insert(userTags).values({ userId, tagId });
+    }
+
+    revalidatePath('/profile');
+}
+
+export async function suggestTag(name: string, category: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    try {
+        // Create tag
+        const [newTag] = await db.insert(tags).values({
+            name,
+            category,
+            isApproved: false,
+            suggestedById: userId,
+        }).returning();
+
+        // Link to user
+        await db.insert(userTags).values({
+            userId,
+            tagId: newTag.id,
+        });
+
+        revalidatePath('/profile');
+        return { success: true, tag: newTag };
+    } catch (e: any) {
+        if (e.message?.includes('unique constraint') || e.code === '23505') {
+            // Tag already exists, just link it if not already linked
+            const [existingTag] = await db.select().from(tags).where(eq(tags.name, name));
+            if (existingTag) {
+                await db.insert(userTags).values({ userId, tagId: existingTag.id }).onConflictDoNothing();
+                revalidatePath('/profile');
+                return { success: true, tag: existingTag };
+            }
+        }
+        return { error: 'Fehler beim Vorschlagen des Tags.' };
+    }
+}
+
+export async function approveTag(tagId: string) {
+    await db.update(tags)
+        .set({ isApproved: true })
+        .where(eq(tags.id, tagId));
+
+    revalidatePath('/admin/tags');
+    revalidatePath('/profile');
+}
+
+export async function deleteTag(tagId: string) {
+    // Delete links first (though cascade might be better, let's be explicit)
+    await db.delete(userTags).where(eq(userTags.tagId, tagId));
+    await db.delete(tags).where(eq(tags.id, tagId));
+
+    revalidatePath('/admin/tags');
+    revalidatePath('/profile');
+}
+
+export async function updateTagAdmin(formData: FormData) {
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const category = formData.get('category') as string;
+    const isApproved = formData.get('isApproved') === 'on';
+
+    if (!id || !name || !category) return;
+
+    await db.update(tags)
+        .set({ name, category, isApproved })
+        .where(eq(tags.id, id));
+
+    revalidatePath('/admin/tags');
+    revalidatePath('/profile');
 }

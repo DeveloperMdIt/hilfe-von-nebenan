@@ -71,7 +71,11 @@ export default async function ChatPage({
         // Ideally we would update "isRead" here, but for now we skip to avoid mutation in render
     }
 
-    const isOnline = partner?.lastSeenAt && (new Date().getTime() - new Date(partner.lastSeenAt).getTime()) < 5 * 60 * 1000;
+    const isOnline = partner?.lastSeenAt && (new Date().getTime() - new Date(partner.lastSeenAt).getTime()) < 10 * 60 * 1000;
+
+    const lastSeenText = partner?.lastSeenAt
+        ? `Zuletzt online: ${new Date(partner.lastSeenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        : 'Offline';
 
     return (
         <div className="flex flex-col h-[calc(100vh-80px)] max-w-4xl mx-auto">
@@ -100,7 +104,7 @@ export default async function ChatPage({
                                 </Link>
                                 <span className="text-gray-300 text-xs">•</span>
                                 <span className={`text-[10px] font-black uppercase tracking-wider ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                                    {isOnline ? 'Online' : 'Offline'}
+                                    {isOnline ? 'Online' : lastSeenText}
                                 </span>
                             </div>
                         </div>
@@ -112,7 +116,7 @@ export default async function ChatPage({
                             </h1>
                             <p className={`text-xs font-black flex items-center gap-1.5 mt-0.5 ${isOnline ? 'text-green-500' : 'text-gray-400'}`}>
                                 <span className={`h-2 w-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-300 dark:bg-zinc-700'}`} />
-                                {isOnline ? 'Online' : 'Offline'}
+                                {isOnline ? 'Online' : lastSeenText}
                             </p>
                         </div>
                     )}

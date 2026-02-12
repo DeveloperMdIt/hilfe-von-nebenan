@@ -24,6 +24,12 @@ export const users = pgTable('users', {
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
     isActive: boolean('is_active').default(true),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+    psttgLastWarningYear: integer('psttg_last_warning_year'),
+    // PStTG Mandatory Data
+    streetAddress: text('street_address'),
+    dateOfBirth: timestamp('date_of_birth', { withTimezone: true }),
+    taxId: varchar('tax_id', { length: 50 }),
+    bankDetails: text('bank_details'), // IBAN/BIC
 });
 
 export const archivedConversations = pgTable('archived_conversations', {
@@ -96,3 +102,20 @@ export const subscriptionPlans = pgTable('subscription_plans', {
     features: text('features'), // JSON string or simple text description
     isActive: boolean('is_active').default(true),
 });
+
+export const tags = pgTable('tags', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: varchar('name', { length: 100 }).notNull().unique(),
+    category: varchar('category', { length: 50 }).notNull(), // 'Interesse', 'Skill', etc.
+    isApproved: boolean('is_approved').default(false),
+    suggestedById: uuid('suggested_by_id').references(() => users.id),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
+export const userTags = pgTable('user_tags', {
+    userId: uuid('user_id').references(() => users.id).notNull(),
+    tagId: uuid('tag_id').references(() => tags.id).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+    pk: sql`PRIMARY KEY (${table.userId}, ${table.tagId})`,
+}));

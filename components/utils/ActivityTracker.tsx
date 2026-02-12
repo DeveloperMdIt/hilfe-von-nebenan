@@ -8,10 +8,10 @@ export function ActivityTracker() {
         // Update activity on mount
         updateActivity();
 
-        // Periodically update every 4 minutes (threshold is 5 min)
+        // Periodically update every 2 minutes (threshold is 10 min)
         const interval = setInterval(() => {
             updateActivity();
-        }, 4 * 60 * 1000);
+        }, 2 * 60 * 1000);
 
         return () => clearInterval(interval);
     }, []);
