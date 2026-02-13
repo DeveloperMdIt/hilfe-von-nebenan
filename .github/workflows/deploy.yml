@@ -28,5 +28,9 @@ jobs:
               git pull origin main
             fi
             docker compose up -d --build
-            sleep 10
+            sleep 15
+            # Run database migrations
+            docker compose exec -T hilfe-app npx tsx scripts/migrate.ts
+            # Run seed if needed (using PGPASSWORD to avoid interactive prompt)
+            export PGPASSWORD=password123
             cat scripts/seed-plans.sql | docker compose exec -T database psql -U postgres -d hilfevonnebenan
