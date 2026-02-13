@@ -37,7 +37,7 @@ export function Footer() {
                                 <ul role="list" className="mt-6 space-y-4">
                                     <li>
                                         <Link href="/tasks" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors">
-                                            Hilfe finden
+                                            Aufträge finden
                                         </Link>
                                     </li>
                                     <li>
