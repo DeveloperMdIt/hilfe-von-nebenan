@@ -74,7 +74,7 @@ export function Footer() {
                                     </li>
                                     <li className="text-sm leading-6 text-gray-500 dark:text-zinc-500 flex items-start gap-1.5">
                                         <MapPin size={14} className="mt-1 flex-shrink-0" />
-                                        Fulda & Region,<br />Deutschland
+                                        Deutschlandweit verfügbar
                                     </li>
                                 </ul>
                             </div>
