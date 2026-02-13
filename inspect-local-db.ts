@@ -6,7 +6,12 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
-const client = postgres(process.env.DATABASE_URL);
+if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL is not set in .env.local');
+    process.exit(1);
+}
+
+const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle(client);
 
 async function inspect() {
