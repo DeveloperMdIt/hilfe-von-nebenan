@@ -57,6 +57,9 @@ import { eq, and, count } from "drizzle-orm";
 import { CookieBanner } from "../components/ui/cookie-banner";
 import { Footer } from "../components/ui/footer";
 import { ActivityTracker } from "../components/utils/ActivityTracker";
+import { getZipCodeStats } from "./actions";
+import ZipCodeWaitingView from "../components/dashboard/ZipCodeWaitingView";
+import { headers } from "next/headers";
 
 export default async function RootLayout({
   children,
@@ -65,31 +68,75 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
-  let user = null;
-  let unreadCount = 0;
+  const headerList = await headers();
+  const urlHeader = headerList.get("x-url") || headerList.get("referer") || "";
 
-  if (userId) {
-    const userResult = await db.select({
-      id: users.id,
-      fullName: users.fullName,
-      email: users.email,
-      role: users.role,
-      zipCode: users.zipCode,
-    }).from(users).where(eq(users.id, userId));
-    user = userResult[0] || null;
-
-    if (user) {
-      const messageResult = await db.select({
-        value: count()
-      }).from(messages).where(
-        and(
-          eq(messages.receiverId, userId),
-          eq(messages.isRead, false)
-        )
-      );
-      unreadCount = Number(messageResult[0]?.value || 0);
+  let path = "/";
+  if (urlHeader) {
+    try {
+      if (urlHeader.startsWith("http")) {
+        path = new URL(urlHeader).pathname;
+      } else {
+        path = urlHeader.split("?")[0];
+      }
+    } catch (e) {
+      console.error("Layout path parsing failed:", e);
     }
   }
+
+  const isExempt = path === "/profile" || path === "/login" || path.startsWith("/api") || path.startsWith("/verify");
+
+  let user = null;
+  let unreadCount = 0;
+  let waitingInfo = null;
+
+  if (userId) {
+    try {
+      const userResult = await db.select({
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+        role: users.role,
+        zipCode: users.zipCode,
+        isVerified: users.isVerified,
+      }).from(users).where(eq(users.id, userId as string));
+      user = userResult[0] || null;
+
+      if (user) {
+        // Check ZIP activation
+        if (user.zipCode && !isExempt) {
+          const stats = await getZipCodeStats(user.zipCode);
+          if (!stats.isActive) {
+            waitingInfo = stats;
+          }
+        }
+
+        const messageResult = await db.select({
+          value: count()
+        }).from(messages).where(
+          and(
+            eq(messages.receiverId, userId as string),
+            eq(messages.isRead, false)
+          )
+        );
+        unreadCount = Number(messageResult[0]?.value || 0);
+      }
+    } catch (e) {
+      console.error("Layout data fetch failed:", e);
+    }
+  }
+
+  const content = waitingInfo ? (
+    <div className="min-h-[calc(100vh-80px)] bg-amber-50/50 dark:bg-zinc-950 flex items-center justify-center p-4">
+      <ZipCodeWaitingView
+        zipCode={waitingInfo.zipCode}
+        count={waitingInfo.count}
+        threshold={waitingInfo.threshold}
+        needed={waitingInfo.needed}
+        userName={user?.fullName || "Nachbar"}
+      />
+    </div>
+  ) : children;
 
   return (
     <html lang="de">
@@ -100,7 +147,7 @@ export default async function RootLayout({
         <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col">
           <div className="flex-1">
-            {children}
+            {content}
           </div>
           <Footer />
         </main>

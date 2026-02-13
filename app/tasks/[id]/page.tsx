@@ -1,7 +1,7 @@
 import { db } from '../../../lib/db';
 import { tasks, users, reviews } from '../../../lib/schema';
 import { eq, and } from 'drizzle-orm';
-import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare } from 'lucide-react';
+import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { confirmTaskCompletion, submitReview } from '../../actions';
@@ -83,7 +83,11 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <CheckCircle2 size={16} className="text-green-500" />
-                                    <span className="capitalize">{task.status === 'open' ? 'Offen' : task.status}</span>
+                                    <span className="capitalize">
+                                        {task.status === 'open' ? 'Offen' :
+                                            task.status === 'paid' ? 'Bezahlt' :
+                                                task.status}
+                                    </span>
                                 </div>
                             </div>
                         </section>
@@ -173,6 +177,19 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                     Nachricht senden
                                 </Link>
 
+                                {/* Payment Button for Seeker */}
+                                {task.customerId === currentUserId && task.status === 'assigned' && (
+                                    <form action={`/api/stripe/checkout/${task.id}`} method="POST">
+                                        <button
+                                            type="submit"
+                                            className="w-full py-4 px-4 bg-amber-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-amber-500 transition-all shadow-lg shadow-amber-900/20"
+                                        >
+                                            <CreditCard size={18} />
+                                            Jetzt sicher bezahlen
+                                        </button>
+                                    </form>
+                                )}
+
                                 {/* Completion Workflow Buttons */}
                                 {task.status !== 'closed' && task.status !== 'open' && (
                                     <>
@@ -219,6 +236,12 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                     <p className="text-xs text-amber-600 font-bold bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
                                         Auftraggeber hat Bestätigung angefordert.
                                     </p>
+                                )}
+                                {task.status === 'paid' && (
+                                    <div className="py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-xl font-bold flex items-center justify-center gap-2 border border-green-100 dark:border-green-800">
+                                        <CheckCircle2 size={18} />
+                                        Bezahlt
+                                    </div>
                                 )}
                                 {task.status === 'closed' && (
                                     <div className="py-3 px-4 bg-gray-100 dark:bg-zinc-800 text-gray-500 rounded-xl font-bold flex items-center justify-center gap-2">

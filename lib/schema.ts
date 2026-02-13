@@ -30,6 +30,7 @@ export const users = pgTable('users', {
     dateOfBirth: timestamp('date_of_birth', { withTimezone: true }),
     taxId: varchar('tax_id', { length: 50 }),
     bankDetails: text('bank_details'), // IBAN/BIC
+    stripeAccountId: varchar('stripe_account_id', { length: 255 }),
 });
 
 export const archivedConversations = pgTable('archived_conversations', {
@@ -67,6 +68,7 @@ export const tasks = pgTable('tasks', {
     priceCents: integer('price_cents').notNull(),
     commissionCents: integer('commission_cents'),
     payoutCents: integer('payout_cents'),
+    stripePaymentIntentId: varchar('stripe_payment_intent_id', { length: 255 }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

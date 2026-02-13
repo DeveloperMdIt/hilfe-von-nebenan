@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { users, tags, userTags } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
+import { CreditCard } from 'lucide-react';
 import ProfileForm from '@/components/profile/profile-form';
 import UserTaskList from '@/components/profile/user-task-list';
 
@@ -63,6 +64,25 @@ export default async function ProfilePage() {
                                 {user.subscriptionExpiresAt && (
                                     <p>Abo gültig bist: <span className="font-medium">{new Date(user.subscriptionExpiresAt).toLocaleDateString()}</span></p>
                                 )}
+                            </div>
+
+                            {/* Stripe Connect Section */}
+                            <div className="mt-6 pt-6 border-t border-amber-100 dark:border-amber-800">
+                                <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Auszahlungen</h4>
+                                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                                    Verbinde dein Stripe-Konto, um automatische Auszahlungen für deine Hilfe zu erhalten.
+                                </p>
+                                <div className="mt-4">
+                                    <form action="/api/stripe/onboard" method="POST">
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-black dark:bg-white text-white dark:text-black text-sm font-bold py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                        >
+                                            <CreditCard size={16} />
+                                            {user.stripeAccountId ? 'Stripe Dashboard' : 'Stripe verbinden'}
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

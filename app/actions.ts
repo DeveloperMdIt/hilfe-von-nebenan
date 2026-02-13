@@ -120,12 +120,14 @@ export async function registerUser(formData: FormData) {
 }
 
 export async function getZipCodeStats(zipCode: string) {
-    const threshold = 10; // Number of users needed to activate the area
+    const settingsResult = await db.select().from(settings).where(eq(settings.key, 'zip_activation_threshold'));
+    const threshold = parseInt(settingsResult[0]?.value || '10');
+
     const userCountResult = await db.select({ count: sql<number>`count(*)` })
         .from(users)
-        .where(eq(users.zipCode, zipCode));
+        .where(and(eq(users.zipCode, zipCode), eq(users.isVerified, true)));
 
-    const count = userCountResult[0]?.count || 0;
+    const count = Number(userCountResult[0]?.count || 0);
     const isActive = count >= threshold;
 
     return {
@@ -845,4 +847,81 @@ export async function updateTagAdmin(formData: FormData) {
 
     revalidatePath('/admin/tags');
     revalidatePath('/profile');
+}
+
+import { getStripeClient } from '@/lib/stripe';
+
+export async function createCheckoutSession(taskId: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    if (!task) throw new Error('Auftrag nicht gefunden');
+    if (task.customerId !== userId) throw new Error('Nicht autorisiert');
+
+    const stripe = await getStripeClient();
+    const origin = (await headers()).get('origin') || 'http://localhost:3009';
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card', 'sepa_debit', 'giropay'],
+        line_items: [
+            {
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: task.title,
+                        description: task.description,
+                    },
+                    unit_amount: task.priceCents,
+                },
+                quantity: 1,
+            },
+        ],
+        mode: 'payment',
+        success_url: `${origin}/tasks/${taskId}?payment=success`,
+        cancel_url: `${origin}/tasks/${taskId}?payment=cancel`,
+        metadata: {
+            taskId: task.id,
+            customerId: userId,
+        },
+    });
+
+    if (!session.url) throw new Error('Fehler beim Erstellen der Stripe-Session');
+    redirect(session.url);
+}
+
+export async function onboardHelper() {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) throw new Error('User nicht gefunden');
+
+    const stripe = await getStripeClient();
+    let accountId = user.stripeAccountId;
+
+    if (!accountId) {
+        const account = await stripe.accounts.create({
+            type: 'express',
+            email: user.email,
+            capabilities: {
+                card_payments: { requested: true },
+                transfers: { requested: true },
+            },
+        });
+        accountId = account.id;
+        await db.update(users).set({ stripeAccountId: accountId }).where(eq(users.id, userId));
+    }
+
+    const origin = (await headers()).get('origin') || 'http://localhost:3009';
+    const accountLink = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${origin}/profile`,
+        return_url: `${origin}/profile`,
+        type: 'account_onboarding',
+    });
+
+    redirect(accountLink.url);
 }

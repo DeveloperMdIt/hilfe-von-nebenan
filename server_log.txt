@@ -1,0 +1,8 @@
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3009
+- Network:       http://192.168.178.26:3009
+- Environments: .env.local
+
+Ô£ô Starting...
+Ô£ô Ready in 845ms
+[?25h
