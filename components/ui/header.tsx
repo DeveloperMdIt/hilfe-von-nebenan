@@ -52,6 +52,12 @@ export function Header({ user, unreadCount = 0 }: {
                     >
                         Aufträge finden
                     </Link>
+                    <Link
+                        href="/tasks/new"
+                        className={`text-sm font-semibold leading-6 transition-colors ${isActive('/tasks/new') ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100 hover:text-amber-600'}`}
+                    >
+                        Hilfe suchen
+                    </Link>
                     {user && (
                         <Link
                             href="/messages"
@@ -120,6 +126,9 @@ export function Header({ user, unreadCount = 0 }: {
                     <div className="flex flex-col space-y-4">
                         <Link href="/tasks" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
                             Aufträge finden
+                        </Link>
+                        <Link href="/tasks/new" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
+                            Hilfe suchen
                         </Link>
                         {user && (
                             <Link href="/messages" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600 flex items-center justify-between">
