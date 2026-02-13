@@ -50,7 +50,7 @@ export function Header({ user, unreadCount = 0 }: {
                         href="/tasks"
                         className={`text-sm font-semibold leading-6 transition-colors ${isActive('/tasks') ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100 hover:text-amber-600'}`}
                     >
-                        Aufträge finden
+                        Hilfe anbieten
                     </Link>
                     <Link
                         href="/tasks/new"
@@ -125,7 +125,7 @@ export function Header({ user, unreadCount = 0 }: {
                 <div className="lg:hidden p-6 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 absolute w-full shadow-xl">
                     <div className="flex flex-col space-y-4">
                         <Link href="/tasks" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
-                            Aufträge finden
+                            Hilfe anbieten
                         </Link>
                         <Link href="/tasks/new" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
                             Hilfe suchen

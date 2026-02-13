@@ -37,7 +37,7 @@ export function Footer() {
                                 <ul role="list" className="mt-6 space-y-4">
                                     <li>
                                         <Link href="/tasks" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors">
-                                            Aufträge finden
+                                            Hilfe anbieten
                                         </Link>
                                     </li>
                                     <li>
@@ -120,7 +120,6 @@ export function Footer() {
                         &copy; {currentYear} Hilfe von Nebenan. Ein Projekt von MD IT Solutions.
                     </p>
                     <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-zinc-500">
-                        <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded uppercase font-bold text-[10px]">Beta</span>
                         <span>Made with ❤️ for the community</span>
                     </div>
                 </div>
