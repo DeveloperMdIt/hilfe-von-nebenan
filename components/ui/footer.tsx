@@ -41,7 +41,7 @@ export function Footer() {
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link href="/tasks/create" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors">
+                                        <Link href="/tasks/new" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors">
                                             Hilfe anbieten
                                         </Link>
                                     </li>
