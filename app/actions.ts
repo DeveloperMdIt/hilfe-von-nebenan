@@ -171,46 +171,64 @@ export async function loginUser(prevState: any, formData: FormData) {
     const headersList = await headers();
     const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
 
+    console.log('Login attempt:', email);
+
     // Rate Limit: 10 login attempts per minute per IP
     if (!checkRateLimit(`login_${ipAddress}`, 10, 60)) {
+        console.log('Rate limit exceeded for:', email);
         return { error: 'Zu viele Anmeldeversuche. Bitte warten Sie eine Minute.', email };
     }
 
-    const userResult = await db.select().from(users).where(eq(users.email, email));
-    const user = userResult[0];
+    try {
+        console.log('Fetching user from DB...');
+        const userResult = await db.select().from(users).where(eq(users.email, email));
+        const user = userResult[0];
 
-    if (!user) {
-        return { error: 'Ungültige Zugangsdaten', email };
-    }
-
-    // Check if email is verified
-    if (!user.emailVerifiedAt) {
-        return { error: 'unverified', email: user.email };
-    }
-
-    // Check if account is active
-    if (user.isActive === false) {
-        return { error: 'Account deaktiviert. Bitte kontaktieren Sie den Support.', email: user.email };
-    }
-
-    // Verify password
-    if (user.password) {
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
+        if (!user) {
+            console.log('User not found:', email);
             return { error: 'Ungültige Zugangsdaten', email };
         }
-    } else {
-        // Fallback for old users or if password is missing
-        return { error: 'Passwort nicht gesetzt. Bitte Passwort vergessen Funktion nutzen.', email };
-    }
 
-    const cookieStore = await cookies();
-    cookieStore.set('userId', user.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-    });
+        // Check if email is verified
+        if (!user.emailVerifiedAt) {
+            console.log('User unverified:', email);
+            return { error: 'unverified', email: user.email };
+        }
+
+        // Check if account is active
+        if (user.isActive === false) {
+            console.log('User inactive:', email);
+            return { error: 'Account deaktiviert. Bitte kontaktieren Sie den Support.', email: user.email };
+        }
+
+        // Verify password
+        if (user.password) {
+            console.log('Verifying password...');
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (!passwordMatch) {
+                console.log('Password mismatch for:', email);
+                return { error: 'Ungültige Zugangsdaten', email };
+            }
+        } else {
+            console.log('No password set for:', email);
+            // Fallback for old users or if password is missing
+            return { error: 'Passwort nicht gesetzt. Bitte Passwort vergessen Funktion nutzen.', email };
+        }
+
+        console.log('Setting session cookie for:', user.id);
+        const cookieStore = await cookies();
+        cookieStore.set('userId', user.id, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+        });
+
+        console.log('Login successful, redirecting...');
+    } catch (e) {
+        console.error('Login Error:', e);
+        throw e;
+    }
 
     redirect('/');
 }
