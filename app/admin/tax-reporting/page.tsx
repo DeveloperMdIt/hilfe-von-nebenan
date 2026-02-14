@@ -13,10 +13,15 @@ export default async function TaxReportingPage() {
         id: users.id,
         fullName: users.fullName,
         email: users.email,
-        streetAddress: users.streetAddress,
+        street: users.street,
+        houseNumber: users.houseNumber,
+        zipCode: users.zipCode,
+        city: users.city,
         dateOfBirth: users.dateOfBirth,
         taxId: users.taxId,
-        bankDetails: users.bankDetails,
+        iban: users.iban,
+        bic: users.bic,
+        accountHolderName: users.accountHolderName,
         taskCount: count(tasks.id),
         totalRevenue: sum(tasks.priceCents),
     })
@@ -93,10 +98,8 @@ export default async function TaxReportingPage() {
                             const isReportable = txCount >= LIMIT_TX || (revenue * 100) >= LIMIT_REVENUE;
                             const isWarning = txCount >= WARNING_TX || (revenue * 100) >= WARNING_REVENUE;
 
-                            // Check data completeness
-                            const [fullHelper] = helperStats.filter(h => h.id === helper.id); // Re-fetch or use helper from list if data included
-                            // Since we join tasks, we might need to fetch full user or select more fields in the initial query
-                            // Let's assume we select more fields in the query
+                            const hasAddress = helper.street && helper.houseNumber && helper.zipCode && helper.city;
+                            const hasBank = helper.iban && helper.bic && helper.accountHolderName;
 
                             return (
                                 <tr key={helper.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition-colors">
@@ -120,10 +123,10 @@ export default async function TaxReportingPage() {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {(isWarning || isReportable) && (
                                             <div className="flex gap-1">
-                                                <span title="Adresse" className={`w-2 h-2 rounded-full ${(helper as any).streetAddress ? 'bg-green-500' : 'bg-red-500'}`} />
-                                                <span title="Geburtsdatum" className={`w-2 h-2 rounded-full ${(helper as any).dateOfBirth ? 'bg-green-500' : 'bg-red-500'}`} />
-                                                <span title="Steuer-ID" className={`w-2 h-2 rounded-full ${(helper as any).taxId ? 'bg-green-500' : 'bg-red-500'}`} />
-                                                <span title="Bankdaten" className={`w-2 h-2 rounded-full ${(helper as any).bankDetails ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                <span title="Adresse" className={`w-2 h-2 rounded-full ${hasAddress ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                <span title="Geburtsdatum" className={`w-2 h-2 rounded-full ${helper.dateOfBirth ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                <span title="Steuer-ID" className={`w-2 h-2 rounded-full ${helper.taxId ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                <span title="Bankdaten" className={`w-2 h-2 rounded-full ${hasBank ? 'bg-green-500' : 'bg-red-500'}`} />
                                             </div>
                                         )}
                                     </td>

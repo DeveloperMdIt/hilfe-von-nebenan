@@ -30,3 +30,20 @@ export function filterContactInfo(text: string): string {
             return match;
         });
 }
+
+/**
+ * Formats a full name to "Firstname L." (e.g., "Michael Deja" -> "Michael D.")
+ * to protect user privacy in public listings.
+ */
+export function formatName(fullName?: string | null): string {
+    if (!fullName) return 'Anonymer Nutzer';
+
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0];
+
+    const firstName = parts[0];
+    const lastName = parts[parts.length - 1];
+    const lastNameInitial = lastName.charAt(0).toUpperCase();
+
+    return `${firstName} ${lastNameInitial}.`;
+}

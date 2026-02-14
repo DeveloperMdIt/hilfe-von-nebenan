@@ -1,12 +1,33 @@
 import Link from 'next/link';
 import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star, FileText } from 'lucide-react';
 import { AdminHeader } from '../../components/admin/header';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { db } from '@/lib/db';
+import { users } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
-export default function AdminLayout({
+export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    // SECURITY CHECK
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) {
+        redirect('/login?callbackUrl=/admin');
+    }
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+    if (!user || user.role !== 'admin') {
+        // Log potential unauthorized access attempt?
+        console.warn(`Unauthorized admin access attempt by user ${userId} (${user?.email})`);
+        redirect('/');
+    }
+
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
         { name: 'Aufträge', icon: ListTodo, href: '/admin/tasks' },

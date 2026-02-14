@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, varchar, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, varchar, integer, boolean, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -26,10 +26,15 @@ export const users = pgTable('users', {
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
     psttgLastWarningYear: integer('psttg_last_warning_year'),
     // PStTG Mandatory Data
-    streetAddress: text('street_address'),
+    street: text('street'),
+    houseNumber: varchar('house_number', { length: 20 }),
+    city: varchar('city', { length: 100 }),
+    country: varchar('country', { length: 100 }).default('Deutschland'),
     dateOfBirth: timestamp('date_of_birth', { withTimezone: true }),
     taxId: varchar('tax_id', { length: 50 }),
-    bankDetails: text('bank_details'), // IBAN/BIC
+    iban: varchar('iban', { length: 50 }),
+    bic: varchar('bic', { length: 20 }),
+    accountHolderName: text('account_holder_name'),
     stripeAccountId: varchar('stripe_account_id', { length: 255 }),
 });
 
@@ -121,3 +126,9 @@ export const userTags = pgTable('user_tags', {
 }, (table) => ({
     pk: sql`PRIMARY KEY (${table.userId}, ${table.tagId})`,
 }));
+
+export const zipCoordinates = pgTable('zip_coordinates', {
+    zipCode: varchar('zip_code', { length: 10 }).primaryKey(),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+});

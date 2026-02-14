@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import { Header } from "../components/ui/header";
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export const metadata: Metadata = {
 };
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "../lib/db";
 import { users, messages } from "../lib/schema";
 import { eq, and, count } from "drizzle-orm";
@@ -69,26 +71,19 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   const headerList = await headers();
-  const urlHeader = headerList.get("x-url") || headerList.get("referer") || "";
+  // Get pathname from our middleware header
+  const path = headerList.get("x-pathname") || "/";
 
-  let path = "/";
-  if (urlHeader) {
-    try {
-      if (urlHeader.startsWith("http")) {
-        path = new URL(urlHeader).pathname;
-      } else {
-        path = urlHeader.split("?")[0];
-      }
-    } catch (e) {
-      console.error("Layout path parsing failed:", e);
-    }
-  }
-
-  const isExempt = path === "/profile" || path === "/login" || path.startsWith("/api") || path.startsWith("/verify");
+  const isExempt = path === "/profile" ||
+    path === "/login" ||
+    path === "/register" ||
+    path === "/waiting" ||
+    path.startsWith("/api") ||
+    path.startsWith("/verify") ||
+    path.startsWith("/admin");
 
   let user = null;
   let unreadCount = 0;
-  let waitingInfo = null;
 
   if (userId) {
     try {
@@ -103,11 +98,11 @@ export default async function RootLayout({
       user = userResult[0] || null;
 
       if (user) {
-        // Check ZIP activation
-        if (user.zipCode && !isExempt) {
+        // Check ZIP activation and redirect if necessary
+        if (user.zipCode && !isExempt && user.role !== 'admin') {
           const stats = await getZipCodeStats(user.zipCode);
           if (!stats.isActive) {
-            waitingInfo = stats;
+            redirect("/waiting");
           }
         }
 
@@ -122,21 +117,10 @@ export default async function RootLayout({
         unreadCount = Number(messageResult[0]?.value || 0);
       }
     } catch (e) {
+      if ((e as any).digest?.startsWith("NEXT_REDIRECT")) throw e;
       console.error("Layout data fetch failed:", e);
     }
   }
-
-  const content = waitingInfo ? (
-    <div className="min-h-[calc(100vh-80px)] bg-amber-50/50 dark:bg-zinc-950 flex items-center justify-center p-4">
-      <ZipCodeWaitingView
-        zipCode={waitingInfo.zipCode}
-        count={waitingInfo.count}
-        threshold={waitingInfo.threshold}
-        needed={waitingInfo.needed}
-        userName={user?.fullName || "Nachbar"}
-      />
-    </div>
-  ) : children;
 
   return (
     <html lang="de">
@@ -147,9 +131,9 @@ export default async function RootLayout({
         <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col">
           <div className="flex-1">
-            {content}
+            {children}
           </div>
-          <Footer />
+          {!path.startsWith('/admin') && <Footer />}
         </main>
         <CookieBanner />
       </body>

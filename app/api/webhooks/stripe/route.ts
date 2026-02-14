@@ -33,7 +33,9 @@ export async function POST(req: Request) {
 
         if (taskId) {
             const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
-            if (task) {
+
+            // Idempotency: If already paid, do nothing
+            if (task && task.status !== 'paid') {
                 const [customer] = await db.select().from(users).where(eq(users.id, task.customerId!));
                 const [helper] = await db.select().from(users).where(eq(users.id, task.helperId!));
 
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
                     stripePaymentIntentId: session.payment_intent as string,
                 }).where(eq(tasks.id, taskId));
 
-                // TODO: Trigger automated payout via Stripe Connect if helper is connected
+                // Trigger automated payout via Stripe Connect
                 if (helper?.stripeAccountId) {
                     try {
                         await stripe.transfers.create({
@@ -64,8 +66,12 @@ export async function POST(req: Request) {
                             destination: helper.stripeAccountId,
                             transfer_group: taskId,
                         });
+                        console.log(`Payout of ${payoutCents} cents to ${helper.stripeAccountId} initiated.`);
                     } catch (e) {
                         console.error('Auto-payout failed:', e);
+                        // Important: We do NOT re-throw here. The payment from customer was successful.
+                        // We need to flag this for manual review/retry, but not fail the webhook
+                        // which would cause Stripe to retry the entire event.
                     }
                 }
             }

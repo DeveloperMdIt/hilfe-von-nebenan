@@ -19,78 +19,148 @@ const client = postgres(connectionString);
 const db = drizzle(client);
 
 async function seedDemoData() {
-    console.log('Seeding demo data...');
+    console.log('Seeding realistic demo data...');
 
     try {
-        // 1. Ensure Demo Customer exists
-        const demoEmail = 'anna.mueller@example.com';
-        let customerId: string;
-
-        const existingUser = await db.select().from(users).where(eq(users.email, demoEmail));
-
-        if (existingUser.length === 0) {
-            console.log('Creating demo user...');
-            const [newUser] = await db.insert(users).values({
-                email: demoEmail,
+        const demoUsers = [
+            {
+                email: 'anna.mueller@example.com',
                 fullName: 'Anna Müller',
                 role: 'customer',
-                trustLevel: 1,
-                isVerified: true,
-                password: 'password', // Optional: set a password so you can login as her
-            }).returning();
-            customerId = newUser.id;
-        } else {
-            console.log('Demo user already exists.');
-            customerId = existingUser[0].id;
-        }
-
-        // 2. Insert Tasks (Idempotent-ish check)
-        const demoTasks = [
-            {
-                title: 'Hilfe beim Einkaufen',
-                description: 'Ich brauche jemanden, der mir 2 Kisten Wasser und Lebensmittel vom Supermarkt holt.',
-                category: 'shopping',
-                priceCents: 1500,
+                zipCode: '36318',
+                city: 'Schwalmtal',
+                street: 'Bahnhofstraße',
+                houseNumber: '1',
+                tasks: [
+                    {
+                        title: 'Hilfe bei Gartenpflege',
+                        description: 'Mein Rasen müsste gemäht werden und die Hecke braucht einen Schnitt. Werkzeug ist vorhanden.',
+                        category: 'Garten',
+                        priceCents: 3500,
+                    }
+                ]
             },
             {
-                title: 'Hund ausführen',
-                description: 'Suche jemanden, der mit meinem Dackel Waldi eine Stunde im Park spazieren geht.',
-                category: 'pets',
-                priceCents: 1000,
+                email: 'bernd.schmidt@example.com',
+                fullName: 'Bernd Schmidt',
+                role: 'customer',
+                zipCode: '10115',
+                city: 'Berlin',
+                street: 'Chausseestraße',
+                houseNumber: '12',
+                tasks: [
+                    {
+                        title: 'PC-Einrichtung & WLAN',
+                        description: 'Ich habe einen neuen Laptop und brauche Hilfe bei der Installation von Programmen und der WLAN-Konfiguration.',
+                        category: 'Technik',
+                        priceCents: 4500,
+                    }
+                ]
             },
             {
-                title: 'Regal aufbauen',
-                description: 'Habe ein neues IKEA-Regal und brauche Hilfe beim Aufbauen. Werkzeug ist vorhanden.',
-                category: 'diy',
-                priceCents: 2000,
+                email: 'claudia.weber@example.com',
+                fullName: 'Claudia Weber',
+                role: 'customer',
+                zipCode: '20095',
+                city: 'Hamburg',
+                street: 'Mönckebergstraße',
+                houseNumber: '5',
+                tasks: [
+                    {
+                        title: 'Hundesitting am Wochenende',
+                        description: 'Suche jemanden, der am Samstag auf meinen Golden Retriever aufpasst und zwei große Runden dreht.',
+                        category: 'Haustiere',
+                        priceCents: 3000,
+                    }
+                ]
+            },
+            {
+                email: 'dieter.kunze@example.com',
+                fullName: 'Dieter Kunze',
+                role: 'customer',
+                zipCode: '80331',
+                city: 'München',
+                street: 'Neuhauser Straße',
+                houseNumber: '21',
+                tasks: [
+                    {
+                        title: 'Einkaufshilfe für Senioren',
+                        description: 'Ich schaffe es nicht mehr, schwere Getränkekisten zu tragen. Suche Hilfe für den wöchentlichen Einkauf.',
+                        category: 'Einkauf',
+                        priceCents: 2000,
+                    }
+                ]
+            },
+            {
+                email: 'erika.petersen@example.com',
+                fullName: 'Erika Petersen',
+                role: 'customer',
+                zipCode: '50667',
+                city: 'Köln',
+                street: 'Hohe Straße',
+                houseNumber: '44',
+                tasks: [
+                    {
+                        title: 'Lampen montieren',
+                        description: 'Habe drei neue Deckenlampen gekauft und traue mich nicht an die Elektrik. Leiter ist vorhanden.',
+                        category: 'Handwerk',
+                        priceCents: 4000,
+                    }
+                ]
             }
         ];
 
-        for (const task of demoTasks) {
-            // Check if this specific task already exists for this user
-            const existingTask = await db.select().from(tasks).where(
-                and(
-                    eq(tasks.customerId, customerId),
-                    eq(tasks.title, task.title)
-                )
-            );
+        for (const uData of demoUsers) {
+            let userId: string;
+            const existingUser = await db.select().from(users).where(eq(users.email, uData.email));
 
-            if (existingTask.length === 0) {
-                console.log(`Creating task: ${task.title}`);
-                await db.insert(tasks).values({
-                    customerId,
-                    title: task.title,
-                    description: task.description,
-                    category: task.category,
-                    priceCents: task.priceCents,
-                    status: 'open',
-                });
+            if (existingUser.length === 0) {
+                console.log(`Creating user: ${uData.fullName}`);
+                const [newUser] = await db.insert(users).values({
+                    email: uData.email,
+                    fullName: uData.fullName,
+                    role: uData.role as any,
+                    zipCode: uData.zipCode,
+                    city: uData.city,
+                    street: uData.street,
+                    houseNumber: uData.houseNumber,
+                    isVerified: true,
+                    password: 'password',
+                }).returning();
+                userId = newUser.id;
             } else {
-                console.log(`Task already exists: ${task.title}`);
+                userId = existingUser[0].id;
+                // Update city/zip if needed
+                await db.update(users).set({
+                    city: uData.city,
+                    zipCode: uData.zipCode,
+                    fullName: uData.fullName
+                }).where(eq(users.id, userId));
+            }
+
+            for (const task of uData.tasks) {
+                const existingTask = await db.select().from(tasks).where(
+                    and(
+                        eq(tasks.customerId, userId),
+                        eq(tasks.title, task.title)
+                    )
+                );
+
+                if (existingTask.length === 0) {
+                    console.log(`Creating task: ${task.title}`);
+                    await db.insert(tasks).values({
+                        customerId: userId,
+                        title: task.title,
+                        description: task.description,
+                        category: task.category,
+                        priceCents: task.priceCents,
+                        status: 'open',
+                    });
+                }
             }
         }
 
-        console.log('Demo data seeding finished.');
+        console.log('Realistic demo data seeding finished.');
 
     } catch (error) {
         console.error('Error seeding demo data:', error);

@@ -10,23 +10,36 @@ import { filterContactInfo } from '@/lib/utils';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, sendPStTGWarningEmail } from '@/lib/mailer';
+import { createTaskSchema, registerSchema, loginSchema } from '@/lib/validation';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 export async function createTask(formData: FormData) {
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const price = formData.get('price') as string;
+    const rawData = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        category: formData.get('category'),
+        price: formData.get('price'),
+    };
 
-    // Basic validation
-    if (!title || !description || !price) {
-        throw new Error('Bitte alle Felder ausfüllen');
+    const validation = createTaskSchema.safeParse(rawData);
+
+    if (!validation.success) {
+        throw new Error(validation.error.issues[0].message);
     }
+
+    const { title, description, category, price } = validation.data;
 
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
 
     if (!userId) {
         throw new Error('Nicht eingeloggt. Bitte erst anmelden.');
+    }
+
+    // PStTG Gatekeeping: Seeker needs minimum Address & Birthday
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user || !user.street || !user.houseNumber || !user.zipCode || !user.city || !user.dateOfBirth) {
+        throw new Error('profile_incomplete_seeker');
     }
 
     // Convert price to cents (assuming input is e.g. "15" or "15.50")
@@ -58,24 +71,28 @@ export async function deleteTask(formData: FormData) {
 
 
 export async function registerUser(formData: FormData) {
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const zipCode = formData.get('zipCode') as string;
-    const password = formData.get('password') as string;
-    const consent = formData.get('consent');
+    const rawData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        zipCode: formData.get('zipCode'),
+        password: formData.get('password'),
+        consent: formData.get('consent'),
+    };
 
-    if (!name || !email || !consent || !zipCode || !password) {
-        return { error: 'Bitte füllen Sie alle Pflichtfelder aus.' };
+    const validation = registerSchema.safeParse(rawData);
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message };
     }
 
-    // Password Validation
-    const hasMinLen = password.length >= 8;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const { name, email, zipCode, password } = validation.data;
 
-    if (!hasMinLen || !hasUpper || !hasNumber || !hasSpecial) {
-        return { error: 'Passwort erfüllt nicht die Sicherheitsanforderungen.' };
+    const headersList = await headers();
+    const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
+
+    // Rate Limit: 5 registrations per hour per IP (prevent spam bots)
+    if (!checkRateLimit(`register_${ipAddress}`, 5, 3600)) {
+        return { error: 'Zu viele Registrierungsversuche. Bitte versuchen Sie es später erneut.' };
     }
 
     // ZipCode Validation (Simple whitelist for now as mentioned in UI)
@@ -84,9 +101,6 @@ export async function registerUser(formData: FormData) {
     if (!allowedPrefixes.includes(prefix)) {
         return { error: 'Aktuell sind wir nur in den Gebieten 36xxx, 34xxx und 35xxx verfügbar.' };
     }
-
-    const headersList = await headers();
-    const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -141,11 +155,25 @@ export async function getZipCodeStats(zipCode: string) {
 
 
 export async function loginUser(prevState: any, formData: FormData) {
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const rawData = {
+        email: formData.get('email'),
+        password: formData.get('password'),
+    };
 
-    if (!email || !password) {
-        return { error: 'Email und Passwort erforderlich', email };
+    const validation = loginSchema.safeParse(rawData);
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message, email: rawData.email as string };
+    }
+
+    const { email, password } = validation.data;
+
+    const headersList = await headers();
+    const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
+
+    // Rate Limit: 10 login attempts per minute per IP
+    if (!checkRateLimit(`login_${ipAddress}`, 10, 60)) {
+        return { error: 'Zu viele Anmeldeversuche. Bitte warten Sie eine Minute.', email };
     }
 
     const userResult = await db.select().from(users).where(eq(users.email, email));
@@ -306,10 +334,16 @@ export async function updateUser(formData: FormData) {
     const password = formData.get('password') as string;
     const isHelperBadge = formData.get('isHelperBadge') === 'on';
     const isActive = formData.get('isActive') === 'on';
-    const streetAddress = formData.get('streetAddress') as string;
+    const street = formData.get('street') as string;
+    const houseNumber = formData.get('houseNumber') as string;
+    const city = formData.get('city') as string;
+    const country = formData.get('country') as string || 'Deutschland';
     const dateOfBirth = formData.get('dateOfBirth') as string;
     const taxId = formData.get('taxId') as string;
-    const bankDetails = formData.get('bankDetails') as string;
+    const iban = formData.get('iban') as string;
+    const bic = formData.get('bic') as string;
+    const accountHolderName = formData.get('accountHolderName') as string;
+    const zipCode = formData.get('zipCode') as string;
 
     if (!id || !email) return;
 
@@ -319,9 +353,14 @@ export async function updateUser(formData: FormData) {
         role,
         isHelperBadge,
         isActive,
-        streetAddress,
+        street,
+        houseNumber,
+        city,
+        country,
         taxId,
-        bankDetails,
+        iban,
+        bic,
+        accountHolderName,
     };
 
     if (dateOfBirth) {
@@ -482,6 +521,12 @@ export async function assignTask(taskId: string, helperId: string) {
     const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
     if (!task || task.customerId !== userId) {
         throw new Error('Nicht autorisiert oder Auftrag nicht gefunden');
+    }
+
+    // PStTG Gatekeeping: Helper needs Tax-ID & Bank Data to be assigned
+    const [helper] = await db.select().from(users).where(eq(users.id, helperId));
+    if (!helper || !helper.taxId || !helper.iban || !helper.bic || !helper.accountHolderName) {
+        throw new Error('profile_incomplete_helper');
     }
 
     await db.update(tasks)
@@ -713,34 +758,47 @@ export async function deleteReview(formData: FormData) {
     if (taskId) revalidatePath(`/tasks/${taskId}`);
 }
 
-export async function updateUserProfile(formData: FormData) {
+export async function updateUserProfile(prevState: any, formData: FormData) {
     const id = formData.get('id') as string;
     const fullName = formData.get('fullName') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const passwordConfirm = formData.get('passwordConfirm') as string;
     const bio = formData.get('bio') as string;
-    const streetAddress = formData.get('streetAddress') as string;
+    const street = formData.get('street') as string;
+    const houseNumber = formData.get('houseNumber') as string;
+    const zipCode = formData.get('zipCode') as string;
+    const city = formData.get('city') as string;
+    const country = formData.get('country') as string || 'Deutschland';
     const dateOfBirth = formData.get('dateOfBirth') as string;
     const taxId = formData.get('taxId') as string;
-    const bankDetails = formData.get('bankDetails') as string;
+    const iban = formData.get('iban') as string;
+    const bic = formData.get('bic') as string;
+    const accountHolderName = formData.get('accountHolderName') as string;
 
-    if (!id || !email) return;
+    if (!id || !email) return { error: 'ID und E-Mail sind erforderlich' };
 
     // Security check: Ensure user is updating their own profile
     const cookieStore = await cookies();
     const sessionUserId = cookieStore.get('userId')?.value;
 
     if (!sessionUserId || sessionUserId !== id) {
-        throw new Error('Nicht autorisiert');
+        return { error: 'Nicht autorisiert' };
     }
 
     const data: any = {
         fullName,
         email,
         bio,
-        streetAddress,
+        street,
+        houseNumber,
+        zipCode,
+        city,
+        country,
         taxId,
-        bankDetails,
+        iban,
+        bic,
+        accountHolderName,
     };
 
     if (dateOfBirth) {
@@ -748,13 +806,21 @@ export async function updateUserProfile(formData: FormData) {
     }
 
     if (password && password.trim() !== '') {
-        data.password = password;
+        if (password !== passwordConfirm) {
+            return { error: 'Die Passwörter stimmen nicht überein' };
+        }
+        const bcrypt = await import('bcryptjs');
+        data.password = await bcrypt.hash(password, 10);
     }
 
-    await db.update(users).set(data).where(eq(users.id, id));
-
-    revalidatePath('/profile');
-    // redirect('/profile'); // Optional, to refresh page content fully
+    try {
+        await db.update(users).set(data).where(eq(users.id, id));
+        revalidatePath('/profile');
+        return { success: true };
+    } catch (e) {
+        console.error('Update profile error:', e);
+        return { error: 'Fehler beim Speichern der Profildaten' };
+    }
 }
 
 export async function toggleUserTag(tagId: string) {

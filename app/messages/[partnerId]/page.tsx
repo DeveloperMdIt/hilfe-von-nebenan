@@ -35,6 +35,8 @@ export default async function ChatPage({
         return <div>Nutzer nicht gefunden.</div>;
     }
 
+    const isPartnerProfileIncomplete = !partner.taxId || !partner.iban || !partner.bic || !partner.accountHolderName;
+
     // Fetch task details if taskId is present
     let task = null;
     if (taskId) {
@@ -127,86 +129,108 @@ export default async function ChatPage({
                     {task ? (
                         // Case: Contextual Chat (linked to a task)
                         task.customerId === userId && (
-                            <form action={async () => {
-                                'use server';
-                                const { assignTask, unassignTask } = await import('@/app/actions');
-                                if (task.helperId === partnerId) {
-                                    await unassignTask(task.id);
-                                } else {
-                                    await assignTask(task.id, partnerId);
-                                }
-                            }}>
-                                <button
-                                    type="submit"
-                                    className={`
-                                        text-sm font-black px-6 py-2.5 rounded-2xl transition-all shadow-md flex items-center gap-2
-                                        ${task.helperId === partnerId
-                                            ? 'bg-green-600 text-white hover:bg-red-600 group'
-                                            : 'bg-amber-600 text-white hover:bg-amber-700 hover:scale-105 active:scale-95'
-                                        }
-                                    `}
-                                >
-                                    {task.helperId === partnerId ? (
-                                        <>
-                                            <CheckCircle2 size={18} className="group-hover:hidden" />
-                                            <span className="group-hover:hidden uppercase tracking-wider">Zugeordnet</span>
-                                            <span className="hidden group-hover:inline uppercase tracking-wider">Zuweisung aufheben</span>
-                                        </>
-                                    ) : (
-                                        'Auftrag zuweisen'
-                                    )}
-                                </button>
-                            </form>
+                            <div className="flex flex-col items-end gap-1">
+                                <form action={async () => {
+                                    'use server';
+                                    const { assignTask, unassignTask } = await import('@/app/actions');
+                                    if (task.helperId === partnerId) {
+                                        await unassignTask(task.id);
+                                    } else {
+                                        await assignTask(task.id, partnerId);
+                                    }
+                                }}>
+                                    <button
+                                        type="submit"
+                                        disabled={!task.helperId && isPartnerProfileIncomplete}
+                                        className={`
+                                            text-sm font-black px-6 py-2.5 rounded-2xl transition-all shadow-md flex items-center gap-2
+                                            ${task.helperId === partnerId
+                                                ? 'bg-green-600 text-white hover:bg-red-600 group'
+                                                : isPartnerProfileIncomplete
+                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-amber-600 text-white hover:bg-amber-700 hover:scale-105 active:scale-95'
+                                            }
+                                        `}
+                                    >
+                                        {task.helperId === partnerId ? (
+                                            <>
+                                                <CheckCircle2 size={18} className="group-hover:hidden" />
+                                                <span className="group-hover:hidden uppercase tracking-wider">Zugeordnet</span>
+                                                <span className="hidden group-hover:inline uppercase tracking-wider">Zuweisung aufheben</span>
+                                            </>
+                                        ) : (
+                                            'Auftrag zuweisen'
+                                        )}
+                                    </button>
+                                </form>
+                                {isPartnerProfileIncomplete && !task.helperId && (
+                                    <span className="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded-full">Profil unvollständig</span>
+                                )}
+                            </div>
                         )
                     ) : (
                         // Case: Generic Chat - Show direct button if exactly one task, or cleaner list if more
                         myOpenTasks.length > 0 && (
-                            <div className="flex items-center gap-2">
-                                {myOpenTasks.length === 1 ? (
-                                    <form action={async () => {
-                                        'use server';
-                                        const { assignTask } = await import('@/app/actions');
-                                        const t = myOpenTasks[0];
-                                        await assignTask(t.id, partnerId);
-                                        const { redirect } = await import('next/navigation');
-                                        redirect(`/messages/${partnerId}?taskId=${t.id}`);
-                                    }}>
-                                        <button
-                                            type="submit"
-                                            className="text-sm font-black px-6 py-2.5 bg-gray-900 dark:bg-zinc-800 text-white rounded-2xl hover:bg-amber-600 transition-all shadow-md hover:scale-105 active:scale-95"
-                                        >
-                                            <span className="opacity-60 text-[10px] uppercase block leading-none mb-0.5">Zuweisen:</span>
-                                            {myOpenTasks[0].title}
-                                        </button>
-                                    </form>
-                                ) : (
-                                    <div className="relative group/menu">
-                                        <button className="text-sm font-black px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 rounded-2xl hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-2 border border-gray-200 dark:border-zinc-700">
-                                            Auftrag wählen
-                                            <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded-full">{myOpenTasks.length}</span>
-                                        </button>
-                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[2rem] shadow-2xl p-4 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-50 transform origin-top-right scale-95 group-hover/menu:scale-100">
-                                            <p className="text-[10px] uppercase font-bold text-gray-400 px-2 py-2 border-b border-gray-100 dark:border-zinc-800 mb-2 tracking-widest text-center">Welcher Auftrag?</p>
-                                            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 selection-menu">
-                                                {myOpenTasks.map(t => (
-                                                    <form action={async () => {
-                                                        'use server';
-                                                        const { assignTask } = await import('@/app/actions');
-                                                        await assignTask(t.id, partnerId);
-                                                        const { redirect } = await import('next/navigation');
-                                                        redirect(`/messages/${partnerId}?taskId=${t.id}`);
-                                                    }} key={t.id}>
-                                                        <button
-                                                            type="submit"
-                                                            className="w-full text-left text-xs font-black p-3 hover:bg-amber-600 hover:text-white rounded-xl truncate transition-all border-none bg-transparent text-gray-700 dark:text-gray-300"
-                                                        >
-                                                            {t.title}
-                                                        </button>
-                                                    </form>
-                                                ))}
+                            <div className="flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-2">
+                                    {myOpenTasks.length === 1 ? (
+                                        <form action={async () => {
+                                            'use server';
+                                            const { assignTask } = await import('@/app/actions');
+                                            const t = myOpenTasks[0];
+                                            await assignTask(t.id, partnerId);
+                                            const { redirect } = await import('next/navigation');
+                                            redirect(`/messages/${partnerId}?taskId=${t.id}`);
+                                        }}>
+                                            <button
+                                                type="submit"
+                                                disabled={isPartnerProfileIncomplete}
+                                                className={`text-sm font-black px-6 py-2.5 rounded-2xl transition-all shadow-md flex flex-col items-center
+                                                    ${isPartnerProfileIncomplete
+                                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                        : 'bg-gray-900 dark:bg-zinc-800 text-white hover:bg-amber-600 hover:scale-105 active:scale-95'
+                                                    }
+                                                `}
+                                            >
+                                                <span className="opacity-60 text-[10px] uppercase block leading-none mb-0.5">Zuweisen:</span>
+                                                {myOpenTasks[0].title}
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <div className="relative group/menu">
+                                            <button className="text-sm font-black px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 rounded-2xl hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-2 border border-gray-200 dark:border-zinc-700">
+                                                Auftrag wählen
+                                                <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded-full">{myOpenTasks.length}</span>
+                                            </button>
+                                            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[2rem] shadow-2xl p-4 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-50 transform origin-top-right scale-95 group-hover/menu:scale-100">
+                                                <p className="text-[10px] uppercase font-bold text-gray-400 px-2 py-2 border-b border-gray-100 dark:border-zinc-800 mb-2 tracking-widest text-center">Welcher Auftrag?</p>
+                                                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 selection-menu">
+                                                    {myOpenTasks.map(t => (
+                                                        <form action={async () => {
+                                                            'use server';
+                                                            const { assignTask } = await import('@/app/actions');
+                                                            await assignTask(t.id, partnerId);
+                                                            const { redirect } = await import('next/navigation');
+                                                            redirect(`/messages/${partnerId}?taskId=${t.id}`);
+                                                        }} key={t.id}>
+                                                            <button
+                                                                type="submit"
+                                                                disabled={isPartnerProfileIncomplete}
+                                                                className={`w-full text-left text-xs font-black p-3 rounded-xl truncate transition-all border-none bg-transparent 
+                                                                    ${isPartnerProfileIncomplete ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 dark:text-gray-300 hover:bg-amber-600 hover:text-white'}
+                                                                `}
+                                                            >
+                                                                {t.title}
+                                                            </button>
+                                                        </form>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+                                {isPartnerProfileIncomplete && (
+                                    <span className="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded-full">Profil unvollständig</span>
                                 )}
                             </div>
                         )

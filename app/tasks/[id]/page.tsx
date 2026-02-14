@@ -5,6 +5,7 @@ import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare, Cre
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { confirmTaskCompletion, submitReview } from '../../actions';
+import { formatName } from '../../../lib/utils';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -161,7 +162,7 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                             </div>
 
                             <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 flex items-center justify-center gap-2">
-                                {requester?.fullName || 'Anonymer Nutzer'}
+                                {formatName(requester?.fullName)}
                                 {requester?.isHelperBadge && (
                                     <Crown size={18} className="text-amber-500 fill-amber-500" />
                                 )}

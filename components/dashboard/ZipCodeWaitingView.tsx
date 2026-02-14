@@ -71,6 +71,15 @@ export default function ZipCodeWaitingView({
                 <span>Ziel: {threshold}</span>
             </div>
 
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-6 rounded-2xl w-full text-left space-y-3">
+                <p className="text-amber-800 dark:text-amber-400 font-bold flex items-center gap-2">
+                    <span className="text-lg">💡</span> Nutze die Zeit!
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+                    Damit es sofort losgehen kann, sobald dein Viertel freigeschaltet ist, kannst du in der Zwischenzeit schon mal <a href="/profile" className="font-bold underline">dein Profil vervollständigen</a>. So bist du bestens vorbereitet!
+                </p>
+            </div>
+
             <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-gray-100 dark:border-zinc-800 shadow-xl space-y-6 w-full">
                 <h3 className="font-black text-xl flex items-center justify-center gap-2 text-gray-900 dark:text-white">
                     <HandHeart className="text-amber-500" />

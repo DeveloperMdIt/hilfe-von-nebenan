@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { updateUser } from '@/app/actions';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import Link from 'next/link';
-import { User, Shield, BadgeCheck, Activity, Trash2, ArrowLeft } from 'lucide-react';
+import { User, Shield, BadgeCheck, Activity, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
 
 export default async function EditUserPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -48,28 +48,130 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
-                                        Vollständiger Name
-                                    </label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Vollständiger Name</label>
                                     <input
                                         type="text"
                                         name="fullName"
                                         defaultValue={user.fullName || ''}
-                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-4 border transition-all hover:border-gray-300"
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all hover:border-gray-300 shadow-sm sm:text-sm"
                                     />
                                 </div>
-
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
-                                        E-Mail Adresse
-                                    </label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">E-Mail Adresse</label>
                                     <input
                                         type="email"
                                         name="email"
                                         defaultValue={user.email}
                                         required
-                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-4 border transition-all hover:border-gray-300"
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all hover:border-gray-300 shadow-sm sm:text-sm"
                                     />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Straße</label>
+                                    <input
+                                        type="text"
+                                        name="street"
+                                        defaultValue={user.street || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Hausnummer</label>
+                                    <input
+                                        type="text"
+                                        name="houseNumber"
+                                        defaultValue={user.houseNumber || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">PLZ</label>
+                                    <input
+                                        type="text"
+                                        name="zipCode"
+                                        defaultValue={user.zipCode || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Stadt</label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        defaultValue={user.city || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <BadgeCheck size={20} className="text-amber-600" />
+                                PStTG & Rechtliches
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Geburtsdatum</label>
+                                    <input
+                                        type="date"
+                                        name="dateOfBirth"
+                                        defaultValue={user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Steuer-ID</label>
+                                    <input
+                                        type="text"
+                                        name="taxId"
+                                        defaultValue={user.taxId || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <CreditCard size={20} className="text-amber-600" />
+                                Bankverbindung
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Kontoinhaber</label>
+                                    <input
+                                        type="text"
+                                        name="accountHolderName"
+                                        defaultValue={user.accountHolderName || ''}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">IBAN</label>
+                                        <input
+                                            type="text"
+                                            name="iban"
+                                            defaultValue={user.iban || ''}
+                                            className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">BIC</label>
+                                        <input
+                                            type="text"
+                                            name="bic"
+                                            defaultValue={user.bic || ''}
+                                            className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -81,13 +183,11 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                             </h3>
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
-                                        Benutzerrolle
-                                    </label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Benutzerrolle</label>
                                     <select
                                         name="role"
                                         defaultValue={user.role || 'customer'}
-                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-4 border transition-all"
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm"
                                     >
                                         <option value="customer">Nachbar (Kunde)</option>
                                         <option value="admin">Administrator (Vollen Zugriff)</option>
@@ -104,9 +204,7 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                                             className="h-7 w-7 rounded-xl border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
                                         />
                                         <label htmlFor="isHelperBadge" className="cursor-pointer">
-                                            <span className="text-sm font-black text-gray-900 dark:text-white block">
-                                                Helfer-Badge
-                                            </span>
+                                            <span className="text-sm font-black text-gray-900 dark:text-white block">Helfer-Badge</span>
                                             <span className="text-[11px] text-gray-500 dark:text-gray-400">Verifiziertes Profilsymbol</span>
                                         </label>
                                     </div>
@@ -117,12 +215,10 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                                             id="isActive"
                                             name="isActive"
                                             defaultChecked={user.isActive !== false}
-                                            className="h-7 w-7 rounded-xl border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                                            className="h-7 w-7 rounded-xl border-gray-300 text-green-600 focus:ring-amber-500 cursor-pointer"
                                         />
                                         <label htmlFor="isActive" className="cursor-pointer">
-                                            <span className="text-sm font-black text-gray-900 dark:text-white block">
-                                                Account Aktiv
-                                            </span>
+                                            <span className="text-sm font-black text-gray-900 dark:text-white block">Account Aktiv</span>
                                             <span className="text-[11px] text-gray-500 dark:text-gray-400">Login Erlaubnis erteilen</span>
                                         </label>
                                     </div>
@@ -132,18 +228,16 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
 
                         <div className="pt-10 border-t border-gray-100 dark:border-zinc-800 space-y-6">
                             <h3 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                <BadgeCheck size={20} className="text-amber-600" />
+                                <Activity size={20} className="text-amber-600" />
                                 Sicherheit
                             </h3>
                             <div className="space-y-3">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
-                                    Neues Passwort setzen
-                                </label>
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Neues Passwort setzen</label>
                                 <input
                                     type="text"
                                     name="password"
                                     placeholder="Passwort eingeben oder leer lassen..."
-                                    className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-4 border transition-all hover:border-gray-300"
+                                    className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all hover:border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm"
                                 />
                                 <p className="text-xs text-gray-400 flex items-center gap-2 italic">
                                     <Activity size={12} />
@@ -175,9 +269,7 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">PLZ / Gebiet</span>
-                                <span className="text-sm font-bold text-amber-600">
-                                    {user.zipCode || 'Nicht hinterlegt'}
-                                </span>
+                                <span className="text-sm font-bold text-amber-600">{user.zipCode || 'Nicht hinterlegt'}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Verifizierungsstatus</span>
