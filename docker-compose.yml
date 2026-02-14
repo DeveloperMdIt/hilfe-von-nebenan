@@ -22,6 +22,13 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password123@database:5432/hilfevonnebenan
       - NODE_ENV=production
+      - NEXT_PUBLIC_BASE_URL
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_USER
+      - SMTP_PASS
+      - SMTP_FROM
     depends_on:
       - database
     restart: always
