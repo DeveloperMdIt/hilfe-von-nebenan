@@ -39,7 +39,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
 # Automatically leverage output traces to reduce image size
@@ -49,6 +48,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/lib ./lib
+
+# Overwrite standalone node_modules with full production dependencies
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 USER nextjs
 
