@@ -23,6 +23,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
+# Production dependencies only
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -33,6 +39,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
 # Automatically leverage output traces to reduce image size
