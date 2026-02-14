@@ -60,7 +60,7 @@ import { CookieBanner } from "../components/ui/cookie-banner";
 import { Footer } from "../components/ui/footer";
 import { ActivityTracker } from "../components/utils/ActivityTracker";
 import { getZipCodeStats } from "./actions";
-import ZipCodeWaitingView from "../components/dashboard/ZipCodeWaitingView";
+
 import { headers } from "next/headers";
 
 export default async function RootLayout({
