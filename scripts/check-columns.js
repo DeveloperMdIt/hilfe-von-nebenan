@@ -29,9 +29,22 @@ async function main() {
             console.log('The migration 0005 or 0006 probably did not run correctly.');
         } else {
             console.log('\n✅ All expected columns seem to be present.');
-            console.log('Checking recent values for a user...');
-            const lastUpdated = await sql`SELECT email, street, city FROM users ORDER BY updated_at DESC LIMIT 1`;
-            console.log('Last updated user sample:', lastUpdated);
+            console.log('Checking data for michael.deja@md-it-solutions.de...');
+            
+            const user = await sql`
+                SELECT id, email, street, house_number, city, zip_code, country, iban, bic 
+                FROM users 
+                WHERE email = 'michael.deja@md-it-solutions.de'
+            `;
+            
+            if (user && user.length > 0) {
+                console.log('User Data found:', user[0]);
+            } else {
+                console.log('User michael.deja@md-it-solutions.de not found.');
+                // List any users to see what's there
+                const anyUsers = await sql`SELECT email FROM users LIMIT 5`;
+                console.log('Some existing users:', anyUsers);
+            }
         }
 
     } catch (e) {
