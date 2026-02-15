@@ -44,6 +44,7 @@ export default async function AdminLayout({
 
     return (
         <div className="flex h-full bg-gray-100 dark:bg-zinc-950 font-[family-name:var(--font-geist-sans)]">
+            <MobileSidebar />
             {/* Sidebar */}
             <aside className="w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 hidden md:flex flex-col">
                 <div className="p-6 border-b border-gray-200 dark:border-zinc-800">
