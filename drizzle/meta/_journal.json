@@ -43,6 +43,13 @@
       "when": 1771102786799,
       "tag": "0005_young_thing",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771153208439,
+      "tag": "0006_loving_rattler",
+      "breakpoints": true
     }
   ]
 }

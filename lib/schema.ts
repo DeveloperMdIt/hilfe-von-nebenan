@@ -22,6 +22,9 @@ export const users = pgTable('users', {
     zipCode: varchar('zip_code', { length: 10 }), // For PLZ-based waiting list thresholds
     verificationToken: text('verification_token'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
+    // Password Reset
+    resetPasswordToken: text('reset_password_token'),
+    resetPasswordExpiresAt: timestamp('reset_password_expires_at', { withTimezone: true }),
     isActive: boolean('is_active').default(true),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
     psttgLastWarningYear: integer('psttg_last_warning_year'),

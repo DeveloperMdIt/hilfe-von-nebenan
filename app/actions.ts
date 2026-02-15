@@ -9,7 +9,7 @@ import { cookies, headers } from 'next/headers';
 import { filterContactInfo } from '@/lib/utils';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, sendPStTGWarningEmail } from '@/lib/mailer';
+import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, sendPStTGWarningEmail, sendPasswordResetEmail } from '@/lib/mailer';
 import { createTaskSchema, registerSchema, loginSchema } from '@/lib/validation';
 import { checkRateLimit } from '@/lib/ratelimit';
 
@@ -1008,4 +1008,85 @@ export async function onboardHelper() {
     });
 
     redirect(accountLink.url);
+}
+
+export async function requestPasswordReset(prevState: any, formData: FormData) {
+    const email = formData.get('email') as string;
+
+    if (!email) {
+        return { error: 'E-Mail ist erforderlich' };
+    }
+
+    const userResult = await db.select().from(users).where(eq(users.email, email));
+    const user = userResult[0];
+
+    // Security: Do not reveal if user exists. Just say "If email exists..."
+    // But for better UX in this specific app context, providing feedback might be okay?
+    // Let's stick to standard security practice: Always return success message.
+
+    if (user) {
+        const token = crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+
+        await db.update(users)
+            .set({
+                resetPasswordToken: token,
+                resetPasswordExpiresAt: expiresAt,
+            })
+            .where(eq(users.id, user.id));
+
+        try {
+            await sendPasswordResetEmail(user.email, user.fullName || 'Nachbar', token);
+        } catch (error) {
+            console.error('Failed to send reset email:', error);
+            // Even if email fails, we might want to tell user "If account exists..." or show generic error
+            return { error: 'Konnte E-Mail nicht senden. Bitte später erneut versuchen.' };
+        }
+    }
+
+    return { success: true, message: 'Falls ein Konto mit dieser E-Mail existiert, haben wir einen Link zum Zurücksetzen gesendet.' };
+}
+
+export async function resetPassword(prevState: any, formData: FormData) {
+    const token = formData.get('token') as string;
+    const password = formData.get('password') as string;
+    const passwordConfirm = formData.get('passwordConfirm') as string;
+
+    if (!token || !password || !passwordConfirm) {
+        return { error: 'Alle Felder sind erforderlich' };
+    }
+
+    if (password !== passwordConfirm) {
+        return { error: 'Passwörter stimmen nicht überein' };
+    }
+
+    if (password.length < 8) {
+        return { error: 'Passwort muss mindestens 8 Zeichen lang sein' };
+    }
+
+    const userResult = await db.select().from(users)
+        .where(
+            and(
+                eq(users.resetPasswordToken, token),
+                gte(users.resetPasswordExpiresAt, new Date())
+            )
+        );
+
+    const user = userResult[0];
+
+    if (!user) {
+        return { error: 'Ungültiger oder abgelaufener Link. Bitte fordere einen neuen an.' };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.update(users)
+        .set({
+            password: hashedPassword,
+            resetPasswordToken: null,
+            resetPasswordExpiresAt: null,
+        })
+        .where(eq(users.id, user.id));
+
+    redirect('/login?reset=success');
 }

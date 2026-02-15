@@ -182,3 +182,45 @@ export async function sendPStTGWarningEmail(to: string, name: string, stats: { t
         console.error('Error sending PStTG warning email:', error);
     }
 }
+
+export async function sendPasswordResetEmail(to: string, name: string, token: string) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const resetUrl = `${baseUrl}/reset-password/${token}`;
+
+    const mailOptions = {
+        from: `"Hilfe von Nebenan" <${process.env.SMTP_FROM || 'noreply@hilfevonnebenan.de'}>`,
+        to,
+        subject: 'Passwort zurücksetzen | Hilfe von Nebenan',
+        html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #d97706;">Hallo ${name},</h2>
+                <p>du hast angefordert, dein Passwort zurückzusetzen.</p>
+                <p>Klicke auf den folgenden Button, um ein neues Passwort zu vergeben:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetUrl}" style="background-color: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Passwort ändern</a>
+                </div>
+                <p style="font-size: 12px; color: #666;">Dieser Link ist 1 Stunde lang gültig.</p>
+                <p style="font-size: 12px; color: #666;">Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br>${resetUrl}</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #999;">Falls du dies nicht angefordert hast, kannst du diese Mail ignorieren.</p>
+            </div>
+        `,
+    };
+
+    if (!process.env.SMTP_USER) {
+        console.log('--- DEVELOPMENT MAIL LOG ---');
+        console.log(`To: ${to}`);
+        console.log(`Subject: ${mailOptions.subject}`);
+        console.log(`Reset URL: ${resetUrl}`);
+        console.log('----------------------------');
+        return;
+    }
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Password reset email sent to ${to}`);
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        throw new Error('E-Mail konnte nicht versendet werden.');
+    }
+}
