@@ -5,7 +5,7 @@ import { BadgeToggle } from '@/components/admin/badge-toggle';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import Link from 'next/link';
 import { desc } from 'drizzle-orm';
-import { UserCog } from 'lucide-react';
+import { UserCog, Pencil } from 'lucide-react';
 
 export default async function UsersPage() {
     const userList = await db.select({
@@ -39,16 +39,16 @@ export default async function UsersPage() {
 
             {/* Desktop Table View (Visible on Large Screens) */}
             <div className="hidden lg:block bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800 table-fixed">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                     <thead className="bg-gray-50 dark:bg-zinc-800/50">
                         <tr>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-1/4">Name</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-1/4">Email</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-auto">Rolle</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest text-center w-auto">Badge</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-auto">Status</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-auto">Erstellt am</th>
-                            <th className="relative px-6 py-4 w-auto">
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Name</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-1/3">Email</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Rolle</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest text-center whitespace-nowrap">Badge</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Status</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Erstellt</th>
+                            <th className="relative px-4 py-4 whitespace-nowrap text-right">
                                 <span className="sr-only">Aktionen</span>
                             </th>
                         </tr>
@@ -56,44 +56,45 @@ export default async function UsersPage() {
                     <tbody className="divide-y divide-gray-100 dark:divide-zinc-800/50">
                         {userList.map((user) => (
                             <tr key={user.id} className={`hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition-colors ${user.isActive === false ? 'opacity-60 bg-red-50/10' : ''}`}>
-                                <td className="px-6 py-4">
-                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate" title={user.fullName || ''}>{user.fullName || 'Kurzname fehlt'}</div>
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate max-w-[150px]" title={user.fullName || ''}>{user.fullName || 'Kurzname fehlt'}</div>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 break-all">
-                                    {user.email}
+                                <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                    <div className="truncate max-w-[250px] xl:max-w-none" title={user.email}>{user.email}</div>
                                 </td>
-                                <td className="px-6 py-4 text-sm">
-                                    <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-wider ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm">
+                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
                                         {user.role}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-center">
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                                     <BadgeToggle userId={user.id} isActive={user.isHelperBadge || false} />
                                 </td>
-                                <td className="px-6 py-4 text-sm">
-                                    <div className="flex flex-col gap-1.5">
+                                <td className="px-4 py-4 whitespace-nowrap text-sm">
+                                    <div className="flex flex-col gap-1">
                                         {user.isActive === false ? (
-                                            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase w-fit">Deaktiviert</span>
+                                            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase w-fit">Inaktiv</span>
                                         ) : (
                                             <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase w-fit">Aktiv</span>
                                         )}
                                         {user.isVerified ? (
-                                            <span className="text-green-600 text-[11px] font-medium flex items-center gap-1">✓ Verifiziert</span>
+                                            <span className="text-green-600 text-[10px] font-medium flex items-center gap-1">✓ Verifiziert</span>
                                         ) : (
-                                            <span className="text-amber-600 text-[11px] font-medium flex items-center gap-1">⏳ Ausstehend</span>
+                                            <span className="text-amber-600 text-[10px] font-medium flex items-center gap-1">⏳ Offen</span>
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString('de-DE') : '-'}
                                 </td>
-                                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                                <td className="px-4 py-4 text-right text-sm font-medium whitespace-nowrap">
                                     <div className="flex justify-end items-center gap-2">
                                         <Link
                                             href={`/admin/users/${user.id}`}
-                                            className="text-amber-600 hover:text-amber-700 font-bold bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg transition-colors"
+                                            className="text-amber-600 hover:text-amber-700 p-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
+                                            title="Benutzer bearbeiten"
                                         >
-                                            Bearbeiten
+                                            <Pencil size={18} />
                                         </Link>
                                         <DeleteUserButton userId={user.id} />
                                     </div>
