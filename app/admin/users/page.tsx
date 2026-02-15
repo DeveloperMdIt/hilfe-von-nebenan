@@ -37,7 +37,7 @@ export default async function UsersPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
                     <thead className="bg-gray-50 dark:bg-zinc-800/50">
                         <tr>

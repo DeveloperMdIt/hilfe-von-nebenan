@@ -15,6 +15,9 @@ async function check() {
             role: users.role,
             zipCode: users.zipCode,
             isVerified: users.isVerified,
+            // New columns check
+            resetPasswordToken: users.resetPasswordToken,
+            street: users.street,
         }).from(users).where(eq(users.id, userId as string));
 
         console.log(JSON.stringify(userResult, null, 2));
