@@ -1,0 +1,63 @@
+http:
+  routers:
+    md-it-solutions:
+      rule: "Host(`md-it-solutions.de`) || Host(`www.md-it-solutions.de`)"
+      service: md-it-solutions
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    sublymaster:
+      rule: "Host(`sublymaster.de`) || Host(`www.sublymaster.de`)"
+      service: sublymaster
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    easy-buy24:
+      rule: "Host(`easy-buy24.de`) || Host(`www.easy-buy24.de`)"
+      service: easy-buy24
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    gluecksmomente:
+      rule: "Host(`gluecksmomente-by-walli.de`) || Host(`www.gluecksmomente-by-walli.de`)"
+      service: gluecksmomente
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    retro-vision:
+      rule: "Host(`retro-vision.de`) || Host(`www.retro-vision.de`)"
+      service: retro-vision
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+
+  services:
+    md-it-solutions:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8080"
+    sublymaster:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+    easy-buy24:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3001"
+    gluecksmomente:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3002"
+    retro-vision:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3003"
