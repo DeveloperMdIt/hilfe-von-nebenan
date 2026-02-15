@@ -83,6 +83,14 @@ export function Header({ user, unreadCount = 0 }: {
                     >
                         Preise
                     </Link>
+                    {user?.role === 'admin' && (
+                        <Link
+                            href="/admin"
+                            className={`text-sm font-semibold leading-6 transition-colors ${isActive('/admin') ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100 hover:text-amber-600'}`}
+                        >
+                            Admin
+                        </Link>
+                    )}
                 </div>
 
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-4 items-center">
@@ -130,6 +138,11 @@ export function Header({ user, unreadCount = 0 }: {
                         <Link href="/tasks/new" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
                             Hilfe suchen
                         </Link>
+                        {user?.role === 'admin' && (
+                            <Link href="/admin" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600">
+                                Admin
+                            </Link>
+                        )}
                         {user && (
                             <Link href="/messages" className="text-base font-semibold leading-7 text-gray-900 dark:text-gray-100 hover:text-amber-600 flex items-center justify-between">
                                 Nachrichten
