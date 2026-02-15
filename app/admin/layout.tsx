@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star, FileText } from 'lucide-react';
+import { MobileSidebar } from '../../components/admin/mobile-sidebar';
 import { AdminHeader } from '../../components/admin/header';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
