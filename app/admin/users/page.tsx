@@ -6,6 +6,7 @@ import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import Link from 'next/link';
 import { desc } from 'drizzle-orm';
 import { UserCog, Pencil } from 'lucide-react';
+import { VerificationToggle } from '@/components/admin/verification-toggle';
 
 export default async function UsersPage() {
     const userList = await db.select({
@@ -127,13 +128,13 @@ export default async function UsersPage() {
                             <div className="w-px h-8 bg-gray-100 dark:bg-zinc-800"></div>
                             <div className="flex flex-col gap-1">
                                 <span className="text-[10px] text-gray-400 uppercase font-bold">Status</span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-2">
                                     {user.isActive === false ? (
                                         <span className="text-red-600 font-bold text-xs">Deaktiviert</span>
                                     ) : (
                                         <span className="text-green-600 font-bold text-xs">Aktiv</span>
                                     )}
-                                    {user.isVerified && <span className="text-green-600 text-xs">✓ Verified</span>}
+                                    <VerificationToggle userId={user.id} isVerified={user.isVerified || false} />
                                 </div>
                             </div>
                             <div className="w-px h-8 bg-gray-100 dark:bg-zinc-800"></div>
