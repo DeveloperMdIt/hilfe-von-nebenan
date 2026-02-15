@@ -273,7 +273,7 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Verifizierungsstatus</span>
-                                {user.emailVerifiedAt ? (
+                                {user.isVerified ? (
                                     <span className="text-xs font-black text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded w-fit mt-1">✓ VERIFIZIERT</span>
                                 ) : (
                                     <span className="text-xs font-black text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded w-fit mt-1">⏳ AUSSTEHEND</span>

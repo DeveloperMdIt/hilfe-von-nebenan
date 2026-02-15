@@ -1113,6 +1113,7 @@ export async function toggleUserVerification(userId: string, isVerified: boolean
             .where(eq(users.id, userId));
 
         revalidatePath('/admin/users');
+        revalidatePath(`/admin/users/${userId}`);
         return { success: true };
     } catch (error) {
         console.error('Failed to toggle verification:', error);
