@@ -1091,3 +1091,30 @@ export async function resetPassword(prevState: any, formData: FormData) {
 
     redirect('/login?reset=success');
 }
+
+export async function toggleUserVerification(userId: string, isVerified: boolean) {
+    const cookieStore = await cookies();
+    const adminId = cookieStore.get('userId')?.value;
+
+    if (!adminId) {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    const [adminUser] = await db.select().from(users).where(eq(users.id, adminId));
+
+    if (!adminUser || adminUser.role !== 'admin') {
+        return { success: false, error: 'Unauthorized' };
+    }
+
+    try {
+        await db.update(users)
+            .set({ isVerified: isVerified })
+            .where(eq(users.id, userId));
+
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to toggle verification:', error);
+        return { success: false, error: 'Failed to update verification status' };
+    }
+}
