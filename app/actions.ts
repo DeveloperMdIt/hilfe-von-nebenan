@@ -379,6 +379,7 @@ export async function updateUser(formData: FormData) {
         iban,
         bic,
         accountHolderName,
+        zipCode,
     };
 
     if (dateOfBirth) {

@@ -43,6 +43,7 @@ export default function ProfileForm({
             if (scrollableElement) {
                 scrollableElement.scrollTo({ top: 0, behavior: 'smooth' });
             }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             const timer = setTimeout(() => setShowSuccess(false), 5000);
             return () => clearTimeout(timer);
         }
