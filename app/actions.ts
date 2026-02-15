@@ -831,6 +831,7 @@ export async function updateUserProfile(prevState: any, formData: FormData) {
         data.password = await bcrypt.hash(password, 10);
     }
 
+    console.log('Update Profile Payload:', data);
     try {
         await db.update(users).set(data).where(eq(users.id, id));
         revalidatePath('/profile');

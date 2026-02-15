@@ -1,9 +1,11 @@
-DO $$
 BEGIN
-  IF EXISTS(SELECT * FROM information_schema.columns WHERE table_name='users' AND column_name='street_address') THEN
+  -- Check if 'street_address' exists AND 'street' does NOT exist before renaming
+  IF EXISTS(SELECT * FROM information_schema.columns WHERE table_name='users' AND column_name='street_address') 
+     AND NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_name='users' AND column_name='street') THEN
     ALTER TABLE "users" RENAME COLUMN "street_address" TO "street";
-  ELSE
-    ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "street" text;
+  -- Otherwise, if 'street' does not exist, add it
+  ELSIF NOT EXISTS(SELECT * FROM information_schema.columns WHERE table_name='users' AND column_name='street') THEN
+    ALTER TABLE "users" ADD COLUMN "street" text;
   END IF;
 END $$;
 --> statement-breakpoint
