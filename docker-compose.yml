@@ -1,11 +1,31 @@
 version: '3.8'
 
 services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=noreply@nachbarschafts-helden.de"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      # - "8080:8080" # Dashboard (optional, disable for production security)
+    volumes:
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+
   database:
     image: postgis/postgis:15-3.4-alpine
     container_name: hilfe_db
-    ports:
-      - "5177:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password123
@@ -17,12 +37,10 @@ services:
   hilfe-app:
     build: .
     container_name: hilfe_app
-    ports:
-      - "3009:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:password123@database:5432/hilfevonnebenan
       - NODE_ENV=production
-      - NEXT_PUBLIC_BASE_URL
+      - NEXT_PUBLIC_BASE_URL=https://nachbarschafts-helden.de
       - SMTP_HOST
       - SMTP_PORT
       - SMTP_SECURE
@@ -31,6 +49,30 @@ services:
       - SMTP_FROM
     depends_on:
       - database
+    labels:
+      - "traefik.enable=true"
+
+      # Main Domain (nachbarschafts-helden.de)
+      - "traefik.http.routers.app.rule=Host(`nachbarschafts-helden.de`) || Host(`www.nachbarschafts-helden.de`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=myresolver"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+
+      # Redirect Middleware (http -> https)
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # Old Domain Redirect (hilfevonnebenan.de -> nachbarschafts-helden.de)
+      - "traefik.http.routers.redirect-old.rule=Host(`hilfevonnebenan.de`) || Host(`www.hilfevonnebenan.de`)"
+      - "traefik.http.routers.redirect-old.entrypoints=websecure"
+      - "traefik.http.routers.redirect-old.tls.certresolver=myresolver"
+      - "traefik.http.routers.redirect-old.middlewares=redirect-middleware"
+      - "traefik.http.middlewares.redirect-middleware.redirectregex.regex=^https?://(?:www\\.)?hilfevonnebenan\\.de/(.*)"
+      - "traefik.http.middlewares.redirect-middleware.redirectregex.replacement=https://nachbarschafts-helden.de/$${1}"
+      - "traefik.http.middlewares.redirect-middleware.redirectregex.permanent=true"
+
     restart: always
 
 volumes:
