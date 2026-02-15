@@ -78,11 +78,9 @@ export default async function UsersPage() {
                                         ) : (
                                             <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase w-fit">Aktiv</span>
                                         )}
-                                        {user.isVerified ? (
-                                            <span className="text-green-600 text-[10px] font-medium flex items-center gap-1">✓ Verifiziert</span>
-                                        ) : (
-                                            <span className="text-amber-600 text-[10px] font-medium flex items-center gap-1">⏳ Offen</span>
-                                        )}
+                                        <div className="mt-1">
+                                            <VerificationToggle userId={user.id} isVerified={user.isVerified || false} />
+                                        </div>
                                     </div>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
