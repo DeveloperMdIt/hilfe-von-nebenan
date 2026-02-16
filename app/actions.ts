@@ -105,10 +105,67 @@ export async function deleteTask(formData: FormData) {
     revalidatePath('/admin/tasks');
     revalidatePath('/profile');
 
-    redirect('/tasks');
+    return { success: true };
 }
 
 
+
+export async function updateTask(formData: FormData) {
+    try {
+        const id = formData.get('id') as string;
+        const rawData = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            category: formData.get('category'),
+            price: formData.get('price'),
+        };
+
+        const validation = createTaskSchema.safeParse(rawData);
+        if (!validation.success) {
+            return { success: false, error: validation.error.issues[0].message };
+        }
+
+        const { title, description, category, price } = validation.data;
+
+        const cookieStore = await cookies();
+        const userId = cookieStore.get('userId')?.value;
+        if (!userId) return { success: false, error: 'Nicht eingeloggt.' };
+
+        const [user] = await db.select().from(users).where(eq(users.id, userId));
+        const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+
+        if (!task) return { success: false, error: 'Auftrag nicht gefunden.' };
+        if (task.customerId !== userId && user?.role !== 'admin') {
+            return { success: false, error: 'Nicht berechtigt.' };
+        }
+
+        const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
+
+        // Auto-Moderation check again on update
+        const modResult = checkContentModeration(`${title} ${description}`);
+        const moderationStatus = modResult.isFlagged ? 'flagged' : 'approved';
+        const isActive = !modResult.isFlagged;
+
+        await db.update(tasks).set({
+            title,
+            description,
+            category,
+            priceCents,
+            moderationStatus,
+            isActive,
+        }).where(eq(tasks.id, id));
+
+        revalidatePath(`/tasks/${id}`);
+        revalidatePath('/tasks');
+        revalidatePath('/admin/tasks');
+        revalidatePath('/profile');
+
+        return { success: true, flagged: modResult.isFlagged };
+    } catch (error) {
+        console.error('Error updating task:', error);
+        return { success: false, error: 'Ein interner Fehler ist aufgetreten.' };
+    }
+}
 
 export async function registerUser(formData: FormData) {
     const rawData = {

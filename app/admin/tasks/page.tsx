@@ -60,7 +60,7 @@ export default async function AdminTasksPage() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm capitalize">
                                     <div className="flex flex-col gap-1">
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase w-fit ${task.moderationStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                                                task.moderationStatus === 'flagged' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                                            task.moderationStatus === 'flagged' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
                                             }`}>
                                             {task.moderationStatus}
                                         </span>
@@ -99,7 +99,10 @@ export default async function AdminTasksPage() {
                                                 {task.isActive ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
                                         </form>
-                                        <form action={deleteTask}>
+                                        <form action={async (formData) => {
+                                            'use server';
+                                            await deleteTask(formData);
+                                        }}>
                                             <input type="hidden" name="id" value={task.id} />
                                             <button type="submit" className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors" title="Löschen">
                                                 <Trash2 size={18} />
@@ -124,7 +127,7 @@ export default async function AdminTasksPage() {
                             </div>
                             <div className="flex flex-col items-end gap-1 ml-2">
                                 <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${task.moderationStatus === 'approved' ? 'bg-green-100 text-green-700' :
-                                        task.moderationStatus === 'flagged' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                                    task.moderationStatus === 'flagged' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                                     }`}>
                                     {task.moderationStatus}
                                 </span>
@@ -155,7 +158,10 @@ export default async function AdminTasksPage() {
                                         {task.isActive ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </form>
-                                <form action={deleteTask}>
+                                <form action={async (formData) => {
+                                    'use server';
+                                    await deleteTask(formData);
+                                }}>
                                     <input type="hidden" name="id" value={task.id} />
                                     <button type="submit" className="p-2 bg-red-50 text-red-600 rounded-lg">
                                         <Trash2 size={18} />

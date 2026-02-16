@@ -1,10 +1,11 @@
 import { db } from '../../../lib/db';
 import { tasks, users, reviews } from '../../../lib/schema';
 import { eq, and } from 'drizzle-orm';
-import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare, CreditCard } from 'lucide-react';
+import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare, CreditCard, Pencil, Trash2, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { confirmTaskCompletion, submitReview } from '../../actions';
+import { DeleteTaskButton } from "@/components/tasks/DeleteTaskButton";
 import { formatName } from '../../../lib/utils';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
@@ -269,10 +270,42 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                         Abgeschlossen
                                     </div>
                                 )}
+
+                                {/* Management Actions for Owner/Admin */}
+                                {(isOwner || isAdmin) && (
+                                    <div className="pt-6 border-t border-gray-100 dark:border-zinc-800 space-y-3">
+                                        <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                                            <span>Verwaltung</span>
+                                            {isOwner ? <span className="text-amber-600">Eigentümer</span> : <span className="text-red-600">Administrator</span>}
+                                        </div>
+
+                                        {task.moderationStatus === 'flagged' && (
+                                            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl mb-4">
+                                                <p className="text-xs text-amber-800 dark:text-amber-400 font-bold flex items-center gap-2">
+                                                    <ShieldAlert size={14} /> In Prüfung
+                                                </p>
+                                                <p className="text-[10px] text-amber-700 dark:text-amber-500 mt-1">
+                                                    Dein Inhalt wird aktuell auf Angemessenheit geprüft. Solange ist er nur für dich sichtbar.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <Link
+                                                href={`/tasks/${task.id}/edit`}
+                                                className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all text-sm"
+                                            >
+                                                <Pencil size={16} /> Bearbeiten
+                                            </Link>
+                                            <DeleteTaskButton taskId={task.id} />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
                                     <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
-                                        <span>Status</span>
-                                        <span className="text-green-500">Verifiziert</span>
+                                        <span>Profil-Status</span>
+                                        <Link href="/profile" className="text-amber-600 hover:underline">Zum Profil</Link>
                                     </div>
                                     <div className="w-full h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-green-500 w-[90%]" />
