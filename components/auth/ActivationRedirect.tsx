@@ -24,7 +24,10 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
             pathname === '/forgot-password' ||
             pathname.startsWith('/reset-password') ||
             pathname.startsWith('/tasks') ||
-            role === 'admin'; // Admins are also exempt from activation redirect
+            role === 'admin';
+
+        console.log(`[ActivationRedirect] Debug: pathname="${pathname}", isActive=${isActive}, role="${role}", isExempt=${isExempt}`);
+        console.log(`[ActivationRedirect] Check: startsWith(/tasks)=${pathname.startsWith('/tasks')}`);
 
         if (isExempt) {
             console.log(`[ActivationRedirect] Path ${pathname} is exempt`);
