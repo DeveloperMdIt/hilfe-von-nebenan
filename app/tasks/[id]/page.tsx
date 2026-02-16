@@ -32,6 +32,25 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
 
     const { task, requester } = data;
 
+    // Access Control: Only owner or admin can see flagged/rejected tasks
+    const [currentUser] = currentUserId ? await db.select().from(users).where(eq(users.id, currentUserId)) : [null];
+    const isAdmin = currentUser?.role === 'admin';
+    const isOwner = currentUserId === task.customerId;
+
+    if (task.moderationStatus !== 'approved' && !isAdmin && !isOwner) {
+        return (
+            <div className="p-20 text-center">
+                <h1 className="text-2xl font-bold mb-4">Inhalt wird geprüft</h1>
+                <p className="text-gray-500">Dieser Auftrag befindet sich aktuell in der Moderations-Prüfung und ist nicht öffentlich zugänglich.</p>
+                <Link href="/tasks" className="text-amber-600 hover:underline mt-4 inline-block">Zurück zur Übersicht</Link>
+            </div>
+        );
+    }
+
+    if (!task.isActive && !isAdmin && !isOwner) {
+        return <div className="p-20 text-center">Dieser Auftrag ist nicht mehr aktiv.</div>;
+    }
+
     // Fetch helper if assigned
     let helper = null;
     if (task.helperId) {

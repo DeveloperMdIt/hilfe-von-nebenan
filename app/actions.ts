@@ -12,6 +12,8 @@ import crypto from 'crypto';
 import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, sendPStTGWarningEmail, sendPasswordResetEmail } from '@/lib/mailer';
 import { createTaskSchema, registerSchema, loginSchema } from '@/lib/validation';
 import { checkRateLimit } from '@/lib/ratelimit';
+import { checkContentModeration } from '@/lib/moderation';
+import { reports as reportsTable } from '@/lib/schema';
 
 export async function createTask(formData: FormData) {
     const rawData = {
@@ -45,6 +47,11 @@ export async function createTask(formData: FormData) {
     // Convert price to cents (assuming input is e.g. "15" or "15.50")
     const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
 
+    // Auto-Moderation check
+    const modResult = checkContentModeration(`${title} ${description}`);
+    const moderationStatus = modResult.isFlagged ? 'flagged' : 'approved';
+    const isActive = !modResult.isFlagged;
+
     await db.insert(tasks).values({
         title,
         description,
@@ -52,10 +59,17 @@ export async function createTask(formData: FormData) {
         priceCents,
         customerId: userId,
         status: 'open',
+        moderationStatus,
+        isActive,
     });
 
     revalidatePath('/tasks');
     revalidatePath('/admin/tasks');
+
+    if (modResult.isFlagged) {
+        return { flagged: true, message: 'Dein Auftrag wird manuell geprüft.' };
+    }
+
     redirect('/tasks');
 }
 
@@ -386,8 +400,15 @@ export async function updateUser(formData: FormData) {
 
     await db.update(users).set(data).where(eq(users.id, id));
 
+    // If user is deactivated, deactivate all their tasks
+    if (isActive === false) {
+        await db.update(tasks).set({ isActive: false }).where(eq(tasks.customerId, id));
+        console.log(`Deactivated all tasks for user ${id}`);
+    }
+
     revalidatePath('/admin/users');
     revalidatePath(`/admin/users/${id}`);
+    revalidatePath('/tasks');
     redirect('/admin/users');
 }
 
@@ -1112,4 +1133,59 @@ export async function toggleUserVerification(userId: string, isVerified: boolean
         console.error('Failed to toggle verification:', error);
         return { success: false, error: 'Failed to update verification status' };
     }
+}
+
+export async function reportTask(taskId: string, reason: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    await db.insert(reportsTable).values({
+        reporterId: userId,
+        targetTaskId: taskId,
+        reason,
+    });
+
+    // Flag the task automatically
+    await db.update(tasks).set({ moderationStatus: 'flagged' }).where(eq(tasks.id, taskId));
+
+    revalidatePath('/tasks');
+    revalidatePath(`/tasks/${taskId}`);
+    revalidatePath('/admin/tasks');
+}
+
+export async function reportUser(targetUserId: string, reason: string) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    if (!userId) throw new Error('Nicht eingeloggt');
+
+    await db.insert(reportsTable).values({
+        reporterId: userId,
+        targetUserId,
+        reason,
+    });
+}
+
+export async function approveTask(taskId: string) {
+    await db.update(tasks)
+        .set({ moderationStatus: 'approved', isActive: true })
+        .where(eq(tasks.id, taskId));
+    revalidatePath('/admin/tasks');
+    revalidatePath('/tasks');
+}
+
+export async function rejectTask(taskId: string) {
+    await db.update(tasks)
+        .set({ moderationStatus: 'rejected', isActive: false })
+        .where(eq(tasks.id, taskId));
+    revalidatePath('/admin/tasks');
+    revalidatePath('/tasks');
+}
+
+export async function toggleTaskActive(taskId: string, isActive: boolean) {
+    await db.update(tasks)
+        .set({ isActive })
+        .where(eq(tasks.id, taskId));
+    revalidatePath('/admin/tasks');
+    revalidatePath('/tasks');
 }

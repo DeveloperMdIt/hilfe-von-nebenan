@@ -32,10 +32,20 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                                         <div className="px-4 py-4 sm:px-6">
                                             <div className="flex items-center justify-between">
                                                 <p className="truncate text-sm font-medium text-amber-600 dark:text-amber-500">{task.title}</p>
-                                                <div className="ml-2 flex flex-shrink-0">
+                                                <div className="ml-2 flex flex-shrink-0 gap-2">
+                                                    {task.moderationStatus === 'flagged' && (
+                                                        <p className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-amber-100 text-amber-800">
+                                                            In Prüfung
+                                                        </p>
+                                                    )}
+                                                    {task.moderationStatus === 'rejected' && (
+                                                        <p className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-red-100 text-red-800">
+                                                            Abgelehnt
+                                                        </p>
+                                                    )}
                                                     <p className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${task.status === 'open' ? 'bg-green-100 text-green-800' :
-                                                            task.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                                                                'bg-yellow-100 text-yellow-800'
+                                                        task.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                                            'bg-yellow-100 text-yellow-800'
                                                         }`}>
                                                         {task.status === 'open' ? 'Offen' : task.status}
                                                     </p>
@@ -78,8 +88,8 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                                                 <p className="truncate text-sm font-medium text-amber-600 dark:text-amber-500">{task.title}</p>
                                                 <div className="ml-2 flex flex-shrink-0">
                                                     <p className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${task.status === 'open' ? 'bg-green-100 text-green-800' :
-                                                            task.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                                                                'bg-yellow-100 text-yellow-800'
+                                                        task.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                                            'bg-yellow-100 text-yellow-800'
                                                         }`}>
                                                         {task.status}
                                                     </p>

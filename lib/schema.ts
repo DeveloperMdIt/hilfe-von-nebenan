@@ -73,10 +73,22 @@ export const tasks = pgTable('tasks', {
     description: text('description').notNull(),
     category: varchar('category', { length: 50 }),
     status: varchar('status', { length: 50 }).default('open'), // 'open', 'assigned', 'completed_by_helper', 'completed_by_seeker', 'closed'
+    moderationStatus: varchar('moderation_status', { length: 20 }).default('approved'), // 'approved', 'flagged', 'rejected'
+    isActive: boolean('is_active').default(true),
     priceCents: integer('price_cents').notNull(),
     commissionCents: integer('commission_cents'),
     payoutCents: integer('payout_cents'),
     stripePaymentIntentId: varchar('stripe_payment_intent_id', { length: 255 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
+export const reports = pgTable('reports', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    reporterId: uuid('reporter_id').references(() => users.id).notNull(),
+    targetTaskId: uuid('target_task_id').references(() => tasks.id),
+    targetUserId: uuid('target_user_id').references(() => users.id),
+    reason: text('reason').notNull(),
+    status: varchar('status', { length: 20 }).default('pending'), // 'pending', 'resolved'
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

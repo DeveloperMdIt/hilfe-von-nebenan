@@ -1,6 +1,6 @@
 import { db } from '../../lib/db';
 import { tasks, users, zipCoordinates } from '../../lib/schema';
-import { desc, ilike, eq, and, sql, or } from 'drizzle-orm';
+import { desc, ilike, eq, and, sql, or, SQL } from 'drizzle-orm';
 import Link from 'next/link';
 import { Crown, MapPin, Clock } from 'lucide-react';
 import { formatName } from '@/lib/utils';
@@ -30,7 +30,10 @@ export default async function TasksPage({
     const center = centerRes[0];
 
     // Construct filters
-    const filters = [];
+    const filters: (SQL<unknown> | undefined)[] = [
+        eq(tasks.isActive, true),
+        eq(tasks.moderationStatus, 'approved')
+    ];
     if (search && !/^\d{5}$/.test(search)) {
         filters.push(or(ilike(tasks.title, `%${search}%`), ilike(tasks.description, `%${search}%`)));
     }
@@ -61,7 +64,7 @@ COALESCE((6371 * acos(
         .from(tasks)
         .leftJoin(users, eq(tasks.customerId, users.id))
         .leftJoin(zipCoordinates, eq(users.zipCode, zipCoordinates.zipCode))
-        .where(and(...filters))
+        .where(and(...filters.filter((f): f is SQL<unknown> => f !== undefined)))
         .orderBy(desc(tasks.createdAt));
 
     // Apply radius filter in memory
