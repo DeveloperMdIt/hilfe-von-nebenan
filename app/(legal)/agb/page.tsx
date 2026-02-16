@@ -14,7 +14,7 @@ export default function AGBPage() {
                     <p>Für die Geschäftsbeziehung zwischen MD IT Solutions (nachfolgend „Anbieter“) und dem Kunden (nachfolgend „Nutzer“) gelten ausschließlich die nachfolgenden Allgemeinen Geschäftsbedingungen in ihrer zum Zeitpunkt der Bestellung gültigen Fassung.</p>
 
                     <h2>2. Vertragsgegenstand</h2>
-                    <p>Über die Plattform „Hilfe von Nebenan“ (oder ähnliche Bezeichnungen) bietet der Anbieter einen Marktplatz zur Vermittlung von Dienstleistungen zwischen Nutzern („Suchende“ und „Helfer“).</p>
+                    <p>Über die Plattform „Nachbarschafts-Helden“ (oder ähnliche Bezeichnungen) bietet der Anbieter einen Marktplatz zur Vermittlung von Dienstleistungen zwischen Nutzern („Suchende“ und „Helfer“).</p>
 
                     <h2>3. Registrierung</h2>
                     <p>Die Nutzung des Angebots setzt eine Registrierung voraus. Ein Anspruch auf Registrierung besteht nicht. Der Nutzer ist verpflichtet, bei der Registrierung wahrheitsgemäße Angaben zu machen.</p>

@@ -26,7 +26,7 @@ export function generateInvoicePDF(data: InvoiceData) {
     // Platform Info
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Hilfe von Nebenan', 140, 30);
+    doc.text('Nachbarschafts-Helden', 140, 30);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text('Ein Projekt von MD IT Solutions', 140, 35);
@@ -70,7 +70,7 @@ export function generateInvoicePDF(data: InvoiceData) {
 
     // Footer
     doc.setFontSize(8);
-    doc.text('Vielen Dank für die Nutzung von Hilfe von Nebenan!', margin, 270);
+    doc.text('Vielen Dank für die Nutzung von Nachbarschafts-Helden!', margin, 270);
     doc.text('Umsatzsteuerbefreit aufgrund der Kleinunternehmerregelung gemäß § 19 UStG.', margin, 275);
 
     return doc;

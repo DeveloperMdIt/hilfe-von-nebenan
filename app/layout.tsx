@@ -16,31 +16,31 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hilfe von Nebenan",
-    template: "%s | Hilfe von Nebenan"
+    default: "Nachbarschafts-Helden",
+    template: "%s | Nachbarschafts-Helden"
   },
   description: "Deine Plattform für Nachbarschaftshilfe. Einfach, lokal und sicher Hilfe finden oder anbieten.",
-  keywords: ["Nachbarschaftshilfe", "Nebenan", "Hilfe", "Unterstützung", "Lokal"],
-  authors: [{ name: "Hilfe von Nebenan Team" }],
+  keywords: ["Nachbarschaftshilfe", "Nebenan", "Hilfe", "Unterstützung", "Lokal", "Nachbarschafts-Helden"],
+  authors: [{ name: "Nachbarschafts-Helden Team" }],
   openGraph: {
     type: "website",
     locale: "de_DE",
-    url: "https://hilfe-von-nebenan.de",
-    siteName: "Hilfe von Nebenan",
-    title: "Hilfe von Nebenan - Deine Nachbarschaftsplattform",
+    url: "https://nachbarschafts-helden.de",
+    siteName: "Nachbarschafts-Helden",
+    title: "Nachbarschafts-Helden - Deine Nachbarschaftsplattform",
     description: "Verbinde dich mit deinen Nachbarn, biete Hilfe an oder finde Unterstützung in deinem Viertel.",
     images: [
       {
         url: "/hero.png",
         width: 1200,
         height: 630,
-        alt: "Hilfe von Nebenan Logo",
+        alt: "Nachbarschafts-Helden Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hilfe von Nebenan",
+    title: "Nachbarschafts-Helden",
     description: "Deine Plattform für Nachbarschaftshilfe.",
     images: ["/hero.png"],
   },

@@ -9,4 +9,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /api/
 
-Sitemap: https://hilfe-von-nebenan.de/sitemap.xml
+Sitemap: https://nachbarschafts-helden.de/sitemap.xml

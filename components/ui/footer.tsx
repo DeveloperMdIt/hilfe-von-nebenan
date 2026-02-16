@@ -15,7 +15,7 @@ export function Footer() {
                             <div className="bg-amber-500 p-1.5 rounded-lg">
                                 <Heart className="text-white fill-white" size={20} />
                             </div>
-                            <span className="text-xl font-black tracking-tight dark:text-white">Hilfe von Nebenan</span>
+                            <span className="text-xl font-black tracking-tight dark:text-white">Nachbarschafts-Helden</span>
                         </Link>
                         <p className="text-sm leading-6 text-gray-600 dark:text-zinc-400 max-w-xs">
                             Deine lokale Plattform für Nachbarschaftshilfe.
@@ -67,7 +67,7 @@ export function Footer() {
                                         </Link>
                                     </li>
                                     <li>
-                                        <a href="mailto:support@hilfe-von-nebenan.de" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors flex items-center gap-1.5">
+                                        <a href="mailto:support@nachbarschafts-helden.de" className="text-sm leading-6 text-gray-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500 transition-colors flex items-center gap-1.5">
                                             <Mail size={14} />
                                             Kontakt
                                         </a>
@@ -117,7 +117,7 @@ export function Footer() {
 
                 <div className="mt-16 border-t border-gray-100 dark:border-zinc-800 pt-8 sm:mt-20 lg:mt-24 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-xs leading-5 text-gray-400 dark:text-zinc-500">
-                        &copy; {currentYear} Hilfe von Nebenan. Ein Projekt von MD IT Solutions.
+                        &copy; {currentYear} Nachbarschafts-Helden. Ein Projekt von MD IT Solutions.
                     </p>
                     <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-zinc-500">
                         <span>Made with ❤️ for the community</span>

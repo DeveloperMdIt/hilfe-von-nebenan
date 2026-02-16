@@ -86,7 +86,7 @@ COALESCE((6371 * acos(
             {/* Header with Search */}
             <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <Link href="/" className="text-xl font-bold whitespace-nowrap">Hilfe von Nebenan</Link>
+                    <Link href="/" className="text-xl font-bold whitespace-nowrap">Nachbarschafts-Helden</Link>
                     <SearchControls
                         search={search}
                         category={category}

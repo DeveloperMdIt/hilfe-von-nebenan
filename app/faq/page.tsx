@@ -7,7 +7,7 @@ const faqs = [
         icon: <HelpCircle className="text-amber-600" size={20} />,
         questions: [
             {
-                q: "Was ist Hilfe von Nebenan?",
+                q: "Was ist Nachbarschafts-Helden?",
                 a: "Wir sind eine lokale Plattform, die Menschen, die Hilfe benötigen, mit hilfsbereiten Nachbarn verbindet. Ob Einkaufen, Hund ausführen oder kleine Reparaturen – hier finden Sie Unterstützung in Ihrer direkten Umgebung."
             },
             {
@@ -86,7 +86,7 @@ export default function FAQPage() {
 
                 <div className="mt-16 text-center">
                     <p className="text-sm text-gray-500 dark:text-zinc-500">
-                        Nichts Passendes gefunden? <a href="mailto:support@hilfe-von-nebenan.de" className="font-semibold text-amber-600 hover:text-amber-500">Schreiben Sie uns eine E-Mail</a>.
+                        Nichts Passendes gefunden? <a href="mailto:support@nachbarschafts-helden.de" className="font-semibold text-amber-600 hover:text-amber-500">Schreiben Sie uns eine E-Mail</a>.
                     </p>
                 </div>
             </div>

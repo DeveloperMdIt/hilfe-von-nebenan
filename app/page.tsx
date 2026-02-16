@@ -38,7 +38,7 @@ export default async function Home() {
           <div className="flex flex-col justify-center space-y-8 z-10 p-4">
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-                Hilfe von Nebenan.<br />
+                Nachbarschafts-Helden.<br />
                 <span className="text-amber-600">Einfach. Lokal.</span>
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-lg">

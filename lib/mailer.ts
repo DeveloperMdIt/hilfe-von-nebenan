@@ -15,13 +15,13 @@ export async function sendVerificationEmail(to: string, name: string, token: str
     const verifyUrl = `${baseUrl}/verify/${token}`;
 
     const mailOptions = {
-        from: `"Hilfe von Nebenan" <${process.env.SMTP_FROM || 'noreply@hilfevonnebenan.de'}>`,
+        from: `"Nachbarschafts-Helden" <${process.env.SMTP_FROM || 'noreply@nachbarschafts-helden.de'}>`,
         to,
-        subject: 'Bestätige deine E-Mail-Adresse | Hilfe von Nebenan',
+        subject: 'Bestätige deine E-Mail-Adresse | Nachbarschafts-Helden',
         html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                 <h2 style="color: #d97706;">Hallo ${name},</h2>
-                <p>vielen Dank für deine Registrierung bei <strong>Hilfe von Nebenan</strong>!</p>
+                <p>vielen Dank für deine Registrierung bei <strong>Nachbarschafts-Helden</strong>!</p>
                 <p>Damit du direkt loslegen kannst, bestätige bitte kurz deine E-Mail-Adresse durch einen Klick auf den folgenden Button:</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${verifyUrl}" style="background-color: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">E-Mail bestätigen</a>
@@ -55,9 +55,9 @@ export async function sendAreaLaunchEmail(toEmails: string[], zipCode: string) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3009';
 
     const mailOptions = {
-        from: `"Hilfe von Nebenan" <${process.env.SMTP_FROM}>`,
+        from: `"Nachbarschafts-Helden" <${process.env.SMTP_FROM}>`,
         bcc: toEmails.join(', '),
-        subject: `Gute Nachrichten! Hilfe von Nebenan ist jetzt live in ${zipCode} 🚀`,
+        subject: `Gute Nachrichten! Nachbarschafts-Helden ist jetzt live in ${zipCode} 🚀`,
         html: `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 24px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 30px;">
@@ -78,7 +78,7 @@ export async function sendAreaLaunchEmail(toEmails: string[], zipCode: string) {
                 </p>
                 <hr style="border: 0; border-top: 1px solid #f3f4f6; margin: 40px 0;">
                 <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-                    Hilfe von Nebenan | Deine lokale Plattform für Nachbarschaftshilfe
+                    Nachbarschafts-Helden | Deine lokale Plattform für Nachbarschaftshilfe
                 </p>
             </div>
         `,
@@ -95,9 +95,9 @@ export async function sendNeighborInviteEmail(toEmail: string, senderName: strin
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3009';
 
     const mailOptions = {
-        from: `"Hilfe von Nebenan" <${process.env.SMTP_FROM}>`,
+        from: `"Nachbarschafts-Helden" <${process.env.SMTP_FROM}>`,
         to: toEmail,
-        subject: `${senderName} lädt dich zu Hilfe von Nebenan in ${zipCode} ein!`,
+        subject: `${senderName} lädt dich zu Nachbarschafts-Helden in ${zipCode} ein!`,
         html: `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 24px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 30px;">
@@ -105,7 +105,7 @@ export async function sendNeighborInviteEmail(toEmail: string, senderName: strin
                 </div>
                 <h2 style="color: #111827; text-align: center; font-size: 24px; font-weight: 800; margin-bottom: 20px;">Hallo Nachbar! 👋</h2>
                 <p style="color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
-                    <strong>${senderName}</strong> hat dich eingeladen, Teil von <strong>Hilfe von Nebenan</strong> in <strong>${zipCode}</strong> zu werden.
+                    <strong>${senderName}</strong> hat dich eingeladen, Teil von <strong>Nachbarschafts-Helden</strong> in <strong>${zipCode}</strong> zu werden.
                 </p>
                 <div style="background-color: #f9fafb; border-radius: 20px; padding: 25px; margin: 30px 0; border: 1px solid #f3f4f6 text-align: center;">
                     <p style="color: #374151; font-style: italic; margin: 0; line-height: 1.6;">
@@ -139,9 +139,9 @@ export async function sendPStTGWarningEmail(to: string, name: string, stats: { t
     const revenueEur = (stats.revenueCents / 100).toFixed(2);
 
     const mailOptions = {
-        from: `"Finanz-Team | Hilfe von Nebenan" <${process.env.SMTP_FROM}>`,
+        from: `"Finanz-Team | Nachbarschafts-Helden" <${process.env.SMTP_FROM}>`,
         to,
-        subject: 'Wichtiger Hinweis zu deiner steuerlichen Meldepflicht (PStTG) | Hilfe von Nebenan',
+        subject: 'Wichtiger Hinweis zu deiner steuerlichen Meldepflicht (PStTG) | Nachbarschafts-Helden',
         html: `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #fca5a5; border-radius: 24px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 30px;">
@@ -169,7 +169,7 @@ export async function sendPStTGWarningEmail(to: string, name: string, stats: { t
                 </p>
                 <hr style="border: 0; border-top: 1px solid #f3f4f6; margin: 40px 0;">
                 <p style="font-size: 11px; color: #d1d5db; text-align: center;">
-                    Dies ist eine gesetzlich erforderliche Information von Hilfe von Nebenan.
+                    Dies ist eine gesetzlich erforderliche Information von Nachbarschafts-Helden.
                 </p>
             </div>
         `,
@@ -188,9 +188,9 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
     const resetUrl = `${baseUrl}/reset-password/${token}`;
 
     const mailOptions = {
-        from: `"Hilfe von Nebenan" <${process.env.SMTP_FROM || 'noreply@hilfevonnebenan.de'}>`,
+        from: `"Nachbarschafts-Helden" <${process.env.SMTP_FROM || 'noreply@nachbarschafts-helden.de'}>`,
         to,
-        subject: 'Passwort zurücksetzen | Hilfe von Nebenan',
+        subject: 'Passwort zurücksetzen | Nachbarschafts-Helden',
         html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                 <h2 style="color: #d97706;">Hallo ${name},</h2>

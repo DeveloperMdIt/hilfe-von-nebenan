@@ -37,7 +37,7 @@ export default function RegisterPage() {
                                 <HeartHandshake size={28} />
                             </div>
                             <div>
-                                <span className="font-black text-2xl tracking-tight text-gray-900 dark:text-white block leading-none">Hilfe von Nebenan</span>
+                                <span className="font-black text-2xl tracking-tight text-gray-900 dark:text-white block leading-none">Nachbarschafts-Helden</span>
                                 <span className="text-[10px] font-black uppercase text-amber-600 tracking-widest mt-1 block">Nachbarschafts-Netzwerk</span>
                             </div>
                         </Link>
