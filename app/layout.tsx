@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | Nachbarschafts-Helden"
   },
   description: "Deine Plattform für Nachbarschaftshilfe. Einfach, lokal und sicher Hilfe finden oder anbieten.",
-  keywords: ["Nachbarschaftshilfe", "Nebenan", "Hilfe", "Unterstützung", "Lokal", "Nachbarschafts-Helden"],
+  keywords: ["Nachbarschaftshilfe", "Held", "Hilfe", "Unterstützung", "Lokal", "Nachbarschafts-Helden"],
   authors: [{ name: "Nachbarschafts-Helden Team" }],
   openGraph: {
     type: "website",

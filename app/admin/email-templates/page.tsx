@@ -13,7 +13,7 @@ export default async function EmailTemplatesPage() {
         const defaults = [
             {
                 key: 'welcome_customer',
-                subject: 'Willkommen bei Hilfe von Nebenan! 👋',
+                subject: 'Willkommen bei Nachbarschafts-Helden! 👋',
                 body: 'Hallo {{name}},\n\nschön, dass du dabei bist! Wir freuen uns, dich in unserer Community begrüßen zu dürfen.\n\nFinde jetzt Hilfe in deiner Nachbarschaft oder biete deine Unterstützung an.\n\nViele Grüße,\nDein Team'
             },
             {
