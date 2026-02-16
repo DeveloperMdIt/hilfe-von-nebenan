@@ -26,6 +26,8 @@ services:
       - ./dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    environment:
+      - DOCKER_API_VERSION=1.44
     restart: always
 
   database:
