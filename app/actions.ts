@@ -84,11 +84,28 @@ export async function createTask(formData: FormData) {
 
 export async function deleteTask(formData: FormData) {
     const id = formData.get('id') as string;
-    if (!id) return;
+    if (!id) return { error: 'Keine ID angegeben.' };
+
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) return { error: 'Nicht eingeloggt.' };
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+
+    if (!task) return { error: 'Auftrag nicht gefunden.' };
+    if (task.customerId !== userId && user?.role !== 'admin') {
+        return { error: 'Nicht berechtigt.' };
+    }
 
     await db.delete(tasks).where(eq(tasks.id, id));
-    revalidatePath('/admin/tasks');
+
     revalidatePath('/tasks');
+    revalidatePath('/admin/tasks');
+    revalidatePath('/profile');
+
+    redirect('/tasks');
 }
 
 

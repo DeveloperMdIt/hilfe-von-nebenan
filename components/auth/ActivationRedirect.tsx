@@ -23,12 +23,15 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
             pathname.startsWith('/api') ||
             pathname === '/forgot-password' ||
             pathname.startsWith('/reset-password') ||
-            pathname === '/tasks/new' ||
-            pathname === '/tasks';
+            pathname.startsWith('/tasks') ||
+            role === 'admin'; // Admins are also exempt from activation redirect
 
-        if (role === 'admin') return;
+        if (isExempt) {
+            console.log(`[ActivationRedirect] Path ${pathname} is exempt`);
+            return;
+        }
 
-        if (!isActive && !isExempt) {
+        if (!isActive) { // If not active and not exempt, redirect to waiting
             console.log(`[Client] Redirecting to /waiting (pathname: ${pathname})`);
             router.replace('/waiting');
         }
