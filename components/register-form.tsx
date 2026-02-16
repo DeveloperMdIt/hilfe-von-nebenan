@@ -85,17 +85,18 @@ export function RegisterForm() {
                 <label htmlFor="zipCode" className="block text-sm font-black text-gray-700 dark:text-gray-300 ml-1">
                     Postleitzahl (PLZ)
                 </label>
-                <div className="mt-2 text-xs text-gray-400 mb-2 italic">Nur PLZ 36xxx und 34xxx möglich</div>
-                <input
-                    id="zipCode"
-                    name="zipCode"
-                    type="text"
-                    pattern="[0-9]{5}"
-                    maxLength={5}
-                    required
-                    placeholder="36320"
-                    className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm focus:ring-2 focus:ring-amber-600 sm:text-sm p-4 border transition-all"
-                />
+                <div className="mt-2">
+                    <input
+                        id="zipCode"
+                        name="zipCode"
+                        type="text"
+                        pattern="[0-9]{5}"
+                        maxLength={5}
+                        required
+                        placeholder="10115"
+                        className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm focus:ring-2 focus:ring-amber-600 sm:text-sm p-4 border transition-all"
+                    />
+                </div>
             </div>
 
             <div className="space-y-4">

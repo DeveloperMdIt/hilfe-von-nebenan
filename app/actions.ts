@@ -95,13 +95,6 @@ export async function registerUser(formData: FormData) {
         return { error: 'Zu viele Registrierungsversuche. Bitte versuchen Sie es später erneut.' };
     }
 
-    // ZipCode Validation (Simple whitelist for now as mentioned in UI)
-    const allowedPrefixes = ['36', '34', '35']; // Added 35 as it's often close to 36/34 in Hessen
-    const prefix = zipCode.substring(0, 2);
-    if (!allowedPrefixes.includes(prefix)) {
-        return { error: 'Aktuell sind wir nur in den Gebieten 36xxx, 34xxx und 35xxx verfügbar.' };
-    }
-
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomUUID();
