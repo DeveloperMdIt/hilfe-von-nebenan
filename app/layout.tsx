@@ -71,12 +71,12 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   const headerList = await headers();
-  // Get pathname from our middleware header
+  const headerKeys = Array.from(headerList.keys());
   const headerPath = headerList.get("x-pathname");
   const path = headerPath || "/";
 
   // Debug log for path detection
-  console.log(`[Layout] Path: ${path}, HeaderPath: ${headerPath}, UserId: ${userId}`);
+  console.log(`[Layout] Path: ${path}, HeaderPath: ${headerPath}, AllKeys: ${JSON.stringify(headerKeys)}`);
   // Check if we are potentially on the waiting page even if header is missing
   // (though in Server Components without headers we can't be 100% sure, 
   // we try to be as specific as possible)
