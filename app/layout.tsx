@@ -63,6 +63,8 @@ import { getZipCodeStats } from "./actions";
 
 import { headers } from "next/headers";
 
+import { ActivationRedirect } from "@/components/auth/ActivationRedirect";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -71,25 +73,13 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
   const headerList = await headers();
-  const headerKeys = Array.from(headerList.keys());
   const headerPath = headerList.get("x-pathname");
   const path = headerPath || "/";
 
-  // Debug log for path detection
-  console.log(`[Layout] Path: ${path}, HeaderPath: ${headerPath}, AllKeys: ${JSON.stringify(headerKeys)}`);
-  // Check if we are potentially on the waiting page even if header is missing
-  // (though in Server Components without headers we can't be 100% sure, 
-  // we try to be as specific as possible)
-  const isExempt = path === "/profile" ||
-    path === "/login" ||
-    path === "/register" ||
-    path === "/waiting" ||
-    path.startsWith("/api") ||
-    path.startsWith("/verify") ||
-    path.startsWith("/admin");
-
   let user = null;
   let unreadCount = 0;
+  let userActive = true;
+  let userRole = null;
 
   if (userId) {
     try {
@@ -104,16 +94,13 @@ export default async function RootLayout({
       user = userResult[0] || null;
 
       if (user) {
-        // Check ZIP activation and redirect if necessary
-        if (user.zipCode && !isExempt && user.role !== 'admin') {
+        userRole = user.role;
+        // Check ZIP activation
+        if (user.zipCode && user.role !== 'admin') {
           try {
             const stats = await getZipCodeStats(user.zipCode);
-            if (!stats.isActive) {
-              console.log(`Redirecting user ${userId} to /waiting (ZIP ${user.zipCode} inactive)`);
-              redirect("/waiting");
-            }
+            userActive = stats.isActive;
           } catch (err) {
-            if ((err as any).digest?.startsWith("NEXT_REDIRECT")) throw err;
             console.error("ZIP Activation check failed:", err);
           }
         }
@@ -129,7 +116,6 @@ export default async function RootLayout({
         unreadCount = Number(messageResult[0]?.value || 0);
       }
     } catch (e) {
-      if ((e as any).digest?.startsWith("NEXT_REDIRECT")) throw e;
       console.error("Layout data fetch failed:", e);
     }
   }
@@ -140,6 +126,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
         <ActivityTracker />
+        <ActivationRedirect isActive={userActive} role={userRole} />
         <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col">
           <div className="flex-1">
