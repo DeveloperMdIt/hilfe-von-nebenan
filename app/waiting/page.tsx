@@ -14,13 +14,18 @@ export default async function WaitingPage() {
         redirect('/login');
     }
 
-    const [user] = await db.select({
+    const userResult = await db.select({
         fullName: users.fullName,
         zipCode: users.zipCode,
         role: users.role,
     }).from(users).where(eq(users.id, userId));
 
+    const user = userResult[0];
+
+    console.log(`[WaitingPage] UserId: ${userId}, UserFound: ${!!user}, ZIP: ${user?.zipCode}`);
+
     if (!user) {
+        console.log(`[WaitingPage] No user found for ID ${userId}, redirecting to /login`);
         redirect('/login');
     }
 
@@ -28,10 +33,12 @@ export default async function WaitingPage() {
         redirect('/profile');
     }
 
-    const stats = await getZipCodeStats(user.zipCode);
+    const stats = await getZipCodeStats(user.zipCode || '');
+    console.log(`[WaitingPage] Stats for ${user.zipCode}: isActive=${stats.isActive}`);
 
     // If active, go to home
     if (stats.isActive || user.role === 'admin') {
+        console.log(`[WaitingPage] Area active or user admin, redirecting to /`);
         redirect('/');
     }
 
