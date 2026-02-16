@@ -16,16 +16,27 @@ const categories = [
 
 export function CreateTaskForm() {
     const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<{ flagged: boolean; message: string } | null>(null);
     const router = useRouter();
 
     async function handleSubmit(formData: FormData) {
+        setError(null);
         startTransition(async () => {
             const res = await createTask(formData);
-            if (res && res.flagged) {
-                setSuccess({ flagged: true, message: res.message });
+
+            if (res.success) {
+                if (res.flagged) {
+                    setSuccess({ flagged: true, message: res.message || '' });
+                } else if (res.redirect) {
+                    router.push(res.redirect);
+                }
             } else {
-                // createTask redirects on success if not flagged
+                if (res.error === 'profile_incomplete_seeker') {
+                    setError('Dein Profil ist noch nicht vollständig. Bitte ergänze deine Adresse und dein Geburtsdatum in den Einstellungen.');
+                } else {
+                    setError(res.error || 'Fehler beim Erstellen des Auftrags.');
+                }
             }
         });
     }
@@ -54,6 +65,11 @@ export function CreateTaskForm() {
 
     return (
         <form action={handleSubmit} className="space-y-6">
+            {error && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 text-sm font-bold animate-in slide-in-from-top-2">
+                    {error}
+                </div>
+            )}
             {/* Title */}
             <div>
                 <label htmlFor="title" className="block text-sm font-black text-gray-700 dark:text-gray-300 ml-1">

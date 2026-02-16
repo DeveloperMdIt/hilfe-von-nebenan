@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations, tags, userTags } from '@/lib/schema';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { eq, or, and, desc, sql, count, sum, lte, gte } from 'drizzle-orm';
 import { cookies, headers } from 'next/headers';
@@ -16,61 +16,70 @@ import { checkContentModeration } from '@/lib/moderation';
 import { reports as reportsTable } from '@/lib/schema';
 
 export async function createTask(formData: FormData) {
-    const rawData = {
-        title: formData.get('title'),
-        description: formData.get('description'),
-        category: formData.get('category'),
-        price: formData.get('price'),
-    };
+    try {
+        const rawData = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            category: formData.get('category'),
+            price: formData.get('price'),
+        };
 
-    const validation = createTaskSchema.safeParse(rawData);
+        const validation = createTaskSchema.safeParse(rawData);
 
-    if (!validation.success) {
-        throw new Error(validation.error.issues[0].message);
+        if (!validation.success) {
+            return { success: false, error: validation.error.issues[0].message };
+        }
+
+        const { title, description, category, price } = validation.data;
+
+        const cookieStore = await cookies();
+        const userId = cookieStore.get('userId')?.value;
+
+        if (!userId) {
+            return { success: false, error: 'Nicht eingeloggt. Bitte erst anmelden.' };
+        }
+
+        // PStTG Gatekeeping: Seeker needs minimum Address & Birthday
+        const [user] = await db.select().from(users).where(eq(users.id, userId));
+        if (!user || !user.street || !user.houseNumber || !user.zipCode || !user.city || !user.dateOfBirth) {
+            return { success: false, error: 'profile_incomplete_seeker' };
+        }
+
+        // Convert price to cents
+        const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
+
+        // Auto-Moderation check
+        const modResult = checkContentModeration(`${title} ${description}`);
+        const moderationStatus = modResult.isFlagged ? 'flagged' : 'approved';
+        const isActive = !modResult.isFlagged;
+
+        await db.insert(tasks).values({
+            title,
+            description,
+            category,
+            priceCents,
+            customerId: userId,
+            status: 'open',
+            moderationStatus,
+            isActive,
+        });
+
+        revalidatePath('/tasks');
+        revalidatePath('/admin/tasks');
+
+        if (modResult.isFlagged) {
+            return { success: true, flagged: true, message: 'Dein Auftrag wurde zur manuellen Prüfung vorgemerkt.' };
+        }
+
+        // Return success for client-side redirect handling OR 
+        // redirect here if not using a transition (but we are)
+        // However, next/navigation redirect() throws a special error which is usually fine if not caught.
+        // We will return success to let the client component handle the final state.
+        return { success: true, redirect: '/tasks' };
+    } catch (error) {
+        console.error('Error creating task:', error);
+        return { success: false, error: 'Ein interner Fehler ist aufgetreten.' };
     }
-
-    const { title, description, category, price } = validation.data;
-
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('userId')?.value;
-
-    if (!userId) {
-        throw new Error('Nicht eingeloggt. Bitte erst anmelden.');
-    }
-
-    // PStTG Gatekeeping: Seeker needs minimum Address & Birthday
-    const [user] = await db.select().from(users).where(eq(users.id, userId));
-    if (!user || !user.street || !user.houseNumber || !user.zipCode || !user.city || !user.dateOfBirth) {
-        throw new Error('profile_incomplete_seeker');
-    }
-
-    // Convert price to cents (assuming input is e.g. "15" or "15.50")
-    const priceCents = Math.round(parseFloat(price.replace(',', '.')) * 100);
-
-    // Auto-Moderation check
-    const modResult = checkContentModeration(`${title} ${description}`);
-    const moderationStatus = modResult.isFlagged ? 'flagged' : 'approved';
-    const isActive = !modResult.isFlagged;
-
-    await db.insert(tasks).values({
-        title,
-        description,
-        category,
-        priceCents,
-        customerId: userId,
-        status: 'open',
-        moderationStatus,
-        isActive,
-    });
-
-    revalidatePath('/tasks');
-    revalidatePath('/admin/tasks');
-
-    if (modResult.isFlagged) {
-        return { flagged: true, message: 'Dein Auftrag wird manuell geprüft.' };
-    }
-
-    redirect('/tasks');
 }
 
 export async function deleteTask(formData: FormData) {
@@ -141,6 +150,7 @@ export async function registerUser(formData: FormData) {
 }
 
 export async function getZipCodeStats(zipCode: string) {
+    noStore();
     try {
         const settingsResult = await db.select().from(settings).where(eq(settings.key, 'zip_activation_threshold'));
         const thresholdVal = settingsResult[0]?.value;

@@ -104,9 +104,15 @@ export default async function RootLayout({
       if (user) {
         // Check ZIP activation and redirect if necessary
         if (user.zipCode && !isExempt && user.role !== 'admin') {
-          const stats = await getZipCodeStats(user.zipCode);
-          if (!stats.isActive) {
-            redirect("/waiting");
+          try {
+            const stats = await getZipCodeStats(user.zipCode);
+            if (!stats.isActive) {
+              console.log(`Redirecting user ${userId} to /waiting (ZIP ${user.zipCode} inactive)`);
+              redirect("/waiting");
+            }
+          } catch (err) {
+            if ((err as any).digest?.startsWith("NEXT_REDIRECT")) throw err;
+            console.error("ZIP Activation check failed:", err);
           }
         }
 
