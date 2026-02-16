@@ -233,7 +233,7 @@ export async function getZipCodeStats(zipCode: string) {
 
         const userCountResult = await db.select({ value: count() })
             .from(users)
-            .where(and(eq(users.zipCode, zipCode), eq(users.isVerified, true)));
+            .where(eq(users.zipCode, zipCode));
 
         const userCount = Number(userCountResult[0]?.value || 0);
         const isActive = userCount >= safeThreshold;

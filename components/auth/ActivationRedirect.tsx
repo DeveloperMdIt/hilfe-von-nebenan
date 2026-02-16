@@ -15,6 +15,7 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
     useEffect(() => {
         // Exempt paths
         const isExempt =
+            pathname === '/' ||
             pathname === '/profile' ||
             pathname === '/login' ||
             pathname === '/register' ||
@@ -24,6 +25,7 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
             pathname === '/forgot-password' ||
             pathname.startsWith('/reset-password') ||
             pathname.startsWith('/tasks') ||
+            pathname.includes('/tasks') ||
             role === 'admin';
 
         console.log(`[ActivationRedirect] Debug: pathname="${pathname}", isActive=${isActive}, role="${role}", isExempt=${isExempt}`);
