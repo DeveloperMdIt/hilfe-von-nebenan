@@ -22,7 +22,9 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
             pathname.startsWith('/admin') ||
             pathname.startsWith('/api') ||
             pathname === '/forgot-password' ||
-            pathname.startsWith('/reset-password');
+            pathname.startsWith('/reset-password') ||
+            pathname === '/tasks/new' ||
+            pathname === '/tasks';
 
         if (role === 'admin') return;
 
