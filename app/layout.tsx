@@ -72,8 +72,12 @@ export default async function RootLayout({
   const userId = cookieStore.get("userId")?.value;
   const headerList = await headers();
   // Get pathname from our middleware header
-  const path = headerList.get("x-pathname") || "/";
+  const headerPath = headerList.get("x-pathname");
+  const path = headerPath || "/";
 
+  // Check if we are potentially on the waiting page even if header is missing
+  // (though in Server Components without headers we can't be 100% sure, 
+  // we try to be as specific as possible)
   const isExempt = path === "/profile" ||
     path === "/login" ||
     path === "/register" ||

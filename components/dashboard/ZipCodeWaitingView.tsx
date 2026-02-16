@@ -18,7 +18,12 @@ export default function ZipCodeWaitingView({
     userName: string;
 }) {
     const [showInviteModal, setShowInviteModal] = useState(false);
-    const progress = Math.min(100, (count / threshold) * 100);
+
+    // Defensive calculation for progress
+    let progress = 0;
+    if (threshold > 0 && typeof count === 'number' && !isNaN(count)) {
+        progress = Math.min(100, (count / threshold) * 100);
+    }
 
     const handleShareLink = async () => {
         const shareData = {

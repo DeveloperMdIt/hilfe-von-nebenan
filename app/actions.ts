@@ -141,23 +141,37 @@ export async function registerUser(formData: FormData) {
 }
 
 export async function getZipCodeStats(zipCode: string) {
-    const settingsResult = await db.select().from(settings).where(eq(settings.key, 'zip_activation_threshold'));
-    const threshold = parseInt(settingsResult[0]?.value || '10');
+    try {
+        const settingsResult = await db.select().from(settings).where(eq(settings.key, 'zip_activation_threshold'));
+        const thresholdVal = settingsResult[0]?.value;
+        const threshold = thresholdVal ? parseInt(thresholdVal) : 10;
+        const safeThreshold = isNaN(threshold) ? 10 : threshold;
 
-    const userCountResult = await db.select({ count: sql<number>`count(*)` })
-        .from(users)
-        .where(and(eq(users.zipCode, zipCode), eq(users.isVerified, true)));
+        const userCountResult = await db.select({ value: count() })
+            .from(users)
+            .where(and(eq(users.zipCode, zipCode), eq(users.isVerified, true)));
 
-    const count = Number(userCountResult[0]?.count || 0);
-    const isActive = count >= threshold;
+        const userCount = Number(userCountResult[0]?.value || 0);
+        const isActive = userCount >= safeThreshold;
 
-    return {
-        zipCode,
-        count,
-        threshold,
-        isActive,
-        needed: Math.max(0, threshold - count)
-    };
+        return {
+            zipCode,
+            count: userCount,
+            threshold: safeThreshold,
+            isActive,
+            needed: Math.max(0, safeThreshold - userCount)
+        };
+    } catch (error) {
+        console.error('Error fetching ZIP stats:', error);
+        // Return a safe fallback to avoid crashing the UI
+        return {
+            zipCode,
+            count: 0,
+            threshold: 10,
+            isActive: false,
+            needed: 10
+        };
+    }
 }
 
 
