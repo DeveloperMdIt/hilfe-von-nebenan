@@ -50,6 +50,13 @@
       "when": 1771153208439,
       "tag": "0006_loving_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771260192996,
+      "tag": "0007_romantic_diamondback",
+      "breakpoints": true
     }
   ]
 }
