@@ -155,3 +155,12 @@ export const zipCoordinates = pgTable('zip_coordinates', {
     latitude: doublePrecision('latitude').notNull(),
     longitude: doublePrecision('longitude').notNull(),
 });
+
+export const feedback = pgTable('feedback', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').references(() => users.id),
+    type: varchar('type', { length: 50 }).notNull(), // 'bug', 'idea', 'other'
+    content: text('content').notNull(),
+    status: varchar('status', { length: 20 }).default('new'), // 'new', 'in_progress', 'resolved'
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

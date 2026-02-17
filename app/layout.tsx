@@ -65,6 +65,8 @@ import { headers } from "next/headers";
 
 import { ActivationRedirect } from "@/components/auth/ActivationRedirect";
 import { AutoLogout } from "@/components/auth/AutoLogout";
+import { FeedbackButton } from "@/components/utils/FeedbackButton";
+import { PwaInstallBanner } from "@/components/utils/PwaInstallBanner";
 
 export default async function RootLayout({
   children,
@@ -123,10 +125,28 @@ export default async function RootLayout({
 
   return (
     <html lang="de">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  // Registration was successful
+                }, function(err) {
+                  // registration failed :(
+                  console.log('ServiceWorker registration failed: ', err);
+                });
+              });
+            }
+          `
+        }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
         <ActivityTracker />
+        <PwaInstallBanner />
         {userId && <AutoLogout />}
         <ActivationRedirect isActive={userActive} role={userRole} />
         <Header user={user} unreadCount={unreadCount} />
@@ -137,6 +157,7 @@ export default async function RootLayout({
           {!path.startsWith('/admin') && <Footer />}
         </main>
         <CookieBanner />
+        <FeedbackButton userId={userId || null} />
       </body>
     </html>
   );

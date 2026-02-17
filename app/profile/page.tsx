@@ -8,6 +8,7 @@ import { CreditCard } from 'lucide-react';
 import ProfileForm from '@/components/profile/profile-form';
 import UserTaskList from '@/components/profile/user-task-list';
 import { InviteSection } from '@/components/profile/invite-section';
+import { PwaInstallProfile } from '@/components/profile/PwaInstallProfile';
 
 export default async function ProfilePage() {
     const cookieStore = await cookies();
@@ -64,6 +65,8 @@ export default async function ProfilePage() {
                                 userTagIds={userTagIds}
                                 categories={categories}
                             />
+
+                            <PwaInstallProfile />
                         </div>
 
                         <div className="mt-10 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">

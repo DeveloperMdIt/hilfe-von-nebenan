@@ -13,7 +13,7 @@ import { sendVerificationEmail, sendAreaLaunchEmail, sendNeighborInviteEmail, se
 import { createTaskSchema, registerSchema, loginSchema } from '@/lib/validation';
 import { checkRateLimit } from '@/lib/ratelimit';
 import { checkContentModeration } from '@/lib/moderation';
-import { reports as reportsTable } from '@/lib/schema';
+import { reports as reportsTable, feedback } from '@/lib/schema';
 import { ensureZipCoordinates } from '@/lib/self-healing';
 
 export async function createTask(formData: FormData) {
@@ -1468,4 +1468,16 @@ export async function getAllTaskMarkers() {
     } catch (error) {
         return { success: false, error: 'Fehler beim Laden der Karten-Pins' };
     }
+}
+export async function submitFeedback(userId: string | null, type: string, content: string) {
+    if (!content) throw new Error('Inhalt ist erforderlich');
+
+    await db.insert(feedback).values({
+        userId,
+        type,
+        content,
+    });
+
+    revalidatePath('/admin/feedback');
+    return { success: true };
 }
