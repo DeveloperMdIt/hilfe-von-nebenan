@@ -45,23 +45,30 @@ export function PwaInstallBanner() {
     }, []);
 
     const handleInstallClick = async () => {
-        if (!deferredPrompt) return;
+        console.log('[DEBUG] PWA Banner: handleInstallClick triggered.');
+        if (!deferredPrompt) {
+            console.log('[DEBUG] PWA Banner: No deferredPrompt available.');
+            return;
+        }
 
         // Show the prompt
         deferredPrompt.prompt();
 
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User response to install prompt: ${outcome}`);
+        console.log(`[DEBUG] PWA Banner: User response to install prompt: ${outcome}`);
 
         // We've used the prompt, and can't use it again, throw it away
         setDeferredPrompt(null);
         setIsVisible(false);
+        console.log('[DEBUG] PWA Banner: Setting pwa_banner_dismissed to true (after install).');
         localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
     const handleDismiss = () => {
+        console.log('[DEBUG] PWA Banner: handleDismiss triggered.');
         setIsVisible(false);
+        console.log('[DEBUG] PWA Banner: Setting pwa_banner_dismissed to true (after dismiss).');
         localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
