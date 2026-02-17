@@ -104,10 +104,16 @@ COALESCE((6371 * acos(
         center = { latitude: 52.5200, longitude: 13.4050 } as any;
     }
 
+    const radiusNum = parseInt(radius === 'all' ? '51' : radius);
+
     // Apply radius filter in memory
-    const filteredTasks = radius === 'all' || !center
+    const nearbyTasks = radius === 'all' || !center
         ? allTasks
-        : allTasks.filter(t => t.distance !== null && t.distance <= parseInt(radius));
+        : allTasks.filter(t => t.distance !== null && t.distance <= radiusNum);
+
+    const furtherTasks = radius === 'all' || !center
+        ? []
+        : allTasks.filter(t => t.distance !== null && t.distance > radiusNum && t.distance <= radiusNum + 30);
 
     const mapData = allTasks // Use allTasks for map (Global View filtered by category/search)
         .filter(t => t.latitude && t.longitude)
@@ -150,22 +156,38 @@ COALESCE((6371 * acos(
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                     Angebote in der Nähe
-                                    <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{filteredTasks.length}</span>
+                                    <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{nearbyTasks.length}</span>
                                 </h3>
                             </div>
 
                             <div className="grid gap-6 md:grid-cols-2">
-                                {filteredTasks.map((task) => (
+                                {nearbyTasks.map((task) => (
                                     <TaskCard key={task.id} task={task} />
                                 ))}
 
-                                {filteredTasks.length === 0 && (
+                                {nearbyTasks.length === 0 && (
                                     <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300">
-                                        <p className="text-lg font-medium">Keine Ergebnisse</p>
-                                        <p className="text-sm mt-1">Versuche den Umkreis zu erhöhen oder die Filter zu ändern.</p>
+                                        <p className="text-lg font-medium">Keine Ergebnisse direkt in der Nähe</p>
+                                        <p className="text-sm mt-1">Versuche den Umkreis zu erhöhen oder schau dir die Angebote weiter unten an.</p>
                                     </div>
                                 )}
                             </div>
+
+                            {furtherTasks.length > 0 && (
+                                <div className="mt-16">
+                                    <div className="flex justify-between items-center mb-6 border-t border-gray-100 dark:border-zinc-800 pt-8">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                            Etwas weiter weg
+                                            <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{furtherTasks.length}</span>
+                                        </h3>
+                                    </div>
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        {furtherTasks.map((task) => (
+                                            <TaskCard key={task.id} task={task} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
