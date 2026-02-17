@@ -13,6 +13,7 @@ export const TASK_CATEGORIES = [
     { slug: 'house-sitting', name: 'Haussitting & Pflanzen' },
     { slug: 'childcare', name: 'Kinderbetreuung' },
     { slug: 'repair', name: 'Reparaturen (Elektro & Kleingeräte)' },
+    { slug: 'learning', name: 'Lernen & Nachhilfe' },
 ];
 
 export const CATEGORY_LABELS: Record<string, string> = TASK_CATEGORIES.reduce((acc, cat) => {
