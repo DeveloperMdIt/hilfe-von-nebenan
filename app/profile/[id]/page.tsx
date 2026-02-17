@@ -87,7 +87,7 @@ export default async function PublicProfilePage(props: { params: Promise<{ id: s
                                 Sicherheit
                             </h4>
                             <p className="text-xs opacity-70 leading-relaxed font-medium">
-                                Alle Zahlungen auf Nachbarschafts-Helden sind durch unseren Käuferschutz abgesichert.
+                                Alle Zahlungen auf Nachbarschafts Helden sind durch unseren Käuferschutz abgesichert.
                             </p>
                         </div>
                     </div>

@@ -115,7 +115,7 @@ export default function LoginPage() {
                 <div className="absolute bottom-10 left-10 p-8 bg-white/90 backdrop-blur-sm rounded-2xl max-w-md shadow-xl">
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Willkommen zurück!</h3>
                     <p className="text-gray-600">
-                        "Nachbarschafts-Helden hat mir geholfen, schnell jemanden für meinen Garten zu finden. Super einfach!"
+                        "Nachbarschafts Helden hat mir geholfen, schnell jemanden für meinen Garten zu finden. Super einfach!"
                     </p>
                 </div>
             </div>
@@ -128,7 +128,7 @@ export default function LoginPage() {
                             <div className="h-10 w-10 bg-amber-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-600/20">
                                 <HeartHandshake size={24} />
                             </div>
-                            <span className="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">Nachbarschafts-Helden</span>
+                            <span className="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">Nachbarschafts Helden</span>
                         </Link>
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                             Anmelden

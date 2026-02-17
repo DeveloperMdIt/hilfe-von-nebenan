@@ -26,8 +26,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "de_DE",
     url: "https://nachbarschafts-helden.de",
-    siteName: "Nachbarschafts-Helden",
-    title: "Nachbarschafts-Helden - Deine Nachbarschaftsplattform",
+    siteName: "Nachbarschafts Helden",
+    title: "Nachbarschafts Helden - Deine Nachbarschaftsplattform",
     description: "Verbinde dich mit deinen Nachbarn, biete Hilfe an oder finde Unterstützung in deinem Viertel.",
     images: [
       {

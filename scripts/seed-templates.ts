@@ -16,7 +16,7 @@ async function seed() {
             subject: 'Bald geht es los in {{zipCode}}! 🏡',
             body: `Hallo {{name}},
 
-vielen Dank für dein Interesse an Nachbarschafts-Helden! 
+vielen Dank für dein Interesse an Nachbarschafts Helden! 
 
 In deiner Postleitzahl {{zipCode}} fehlen uns aktuell noch {{needed}} Nachbarn, um die Plattform in deinem Bereich freizuschalten. 
 
@@ -26,21 +26,21 @@ Hilf mit und lade deine Nachbarn ein: {{inviteLink}}
 
 Zusammen machen wir die Nachbarschaft ein Stück besser!
 
-Dein Team von Nachbarschafts-Helden`
+Dein Team von Nachbarschafts Helden`
         },
         {
             key: 'email_verification',
-            subject: 'Bestätige deine E-Mail-Adresse | Nachbarschafts-Helden',
+            subject: 'Bestätige deine E-Mail-Adresse | Nachbarschafts Helden',
             body: `Hallo {{name}},
 
-vielen Dank für deine Registrierung bei Nachbarschafts-Helden! 
+vielen Dank für deine Registrierung bei Nachbarschafts Helden! 
 
 Damit du direkt loslegen kannst, bestätige bitte kurz deine E-Mail-Adresse durch einen Klick auf den folgenden Link:
 
 {{verifyUrl}}
 
 Viel Erfolg in deiner Nachbarschaft!
-Dein Team von Nachbarschafts-Helden`
+Dein Team von Nachbarschafts Helden`
         }
     ];
 

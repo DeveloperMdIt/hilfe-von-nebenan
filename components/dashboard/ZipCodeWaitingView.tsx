@@ -27,8 +27,8 @@ export default function ZipCodeWaitingView({
 
     const handleShareLink = async () => {
         const shareData = {
-            title: 'Nachbarschafts-Helden',
-            text: `Hilf uns, Nachbarschafts-Helden in ${zipCode} zu starten! Wir brauchen noch ein paar Nachbarn.`,
+            title: 'Nachbarschafts Helden',
+            text: `Hilf uns, Nachbarschafts Helden in ${zipCode} zu starten! Wir brauchen noch ein paar Nachbarn.`,
             url: window.location.origin
         };
 

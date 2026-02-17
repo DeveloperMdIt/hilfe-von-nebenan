@@ -1,3 +1,4 @@
+// Beta Handbook v1.1 - 2026-02-17 (Cache-Bust)
 import { ShieldAlert, CreditCard, Info, Heart, Smartphone, MapPin, Package, Wrench, MessageSquare, Star, Layout, Laptop } from 'lucide-react';
 import Link from 'next/link';
 
@@ -113,7 +114,7 @@ export default function BetaHandbookPage() {
                                 title: "3. Hilfe-Missionen erstellen",
                                 icon: Wrench,
                                 tasks: [
-                                    "Erstelle ein Hilfegesuch mit Ort und Bildern.",
+                                    "Erstelle ein Hilfegesuch mit Ort und Details.",
                                     "Nutze die Karte, um Aufträge in deiner Nähe zu sehen.",
                                     "Teste die verschiedenen Kategorien (z.B. Garten, Haushalt).",
                                     "Aufträge bearbeiten oder stornieren."
@@ -126,7 +127,7 @@ export default function BetaHandbookPage() {
                                 tasks: [
                                     "Sende eine Hilfe-Anfrage an einen anderen Nutzer.",
                                     "Chatte über das integrierte Nachrichtensystem.",
-                                    "Akzeptiere eine Hilfe-Zusagen.",
+                                    "Akzeptiere eine Hilfe-Zusage.",
                                     "Simuliere die Bezahlung mit den Test-Zahlungsdaten.",
                                     "Gib eine ehrliche Bewertung nach dem Kontakt ab."
                                 ]
@@ -137,7 +138,7 @@ export default function BetaHandbookPage() {
                                 icon: ShieldAlert,
                                 tasks: [
                                     "Nutze den 'Melden' Button bei unpassenden Inhalten.",
-                                    "Prüfe die Push-Benachrichtigungen bei neuen Nachrichten.",
+                                    "Prüfe die Benachrichtigungen (Glocken-Icon) bei neuen Nachrichten.",
                                     "Teste die App im Hell- und Dunkelmodus.",
                                     "Feedback über das lila Symbol am Rand senden."
                                 ]

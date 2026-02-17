@@ -344,42 +344,42 @@ export async function loginUser(prevState: any, formData: FormData) {
     }
 
     try {
-        console.log('Fetching user from DB...');
+        console.log('[DEBUG] Login: Fetching user from DB for email:', email);
         const userResult = await db.select().from(users).where(eq(users.email, email));
         const user = userResult[0];
 
         if (!user) {
-            console.log('User not found:', email);
+            console.log('[DEBUG] Login: User not found:', email);
             return { error: 'Ungültige Zugangsdaten', email };
         }
 
+        console.log('[DEBUG] Login: User found, verifying status...');
         // Check if email is verified
         if (!user.emailVerifiedAt) {
-            console.log('User unverified:', email);
+            console.log('[DEBUG] Login: User unverified:', email);
             return { error: 'unverified', email: user.email };
         }
 
         // Check if account is active
         if (user.isActive === false) {
-            console.log('User inactive:', email);
+            console.log('[DEBUG] Login: User inactive:', email);
             return { error: 'Account deaktiviert. Bitte kontaktieren Sie den Support.', email: user.email };
         }
 
         // Verify password
         if (user.password) {
-            console.log('Verifying password...');
+            console.log('[DEBUG] Login: Verifying password with bcrypt...');
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
-                console.log('Password mismatch for:', email);
+                console.log('[DEBUG] Login: Password mismatch for:', email);
                 return { error: 'Ungültige Zugangsdaten', email };
             }
         } else {
-            console.log('No password set for:', email);
-            // Fallback for old users or if password is missing
+            console.log('[DEBUG] Login: No password set for:', email);
             return { error: 'Passwort nicht gesetzt. Bitte Passwort vergessen Funktion nutzen.', email };
         }
 
-        console.log('Setting session cookie for:', user.id);
+        console.log('[DEBUG] Login: Setting session cookie for user:', user.id);
         const cookieStore = await cookies();
         cookieStore.set('userId', user.id, {
             httpOnly: true,
@@ -388,9 +388,15 @@ export async function loginUser(prevState: any, formData: FormData) {
             maxAge: 60 * 60 * 24 * 7, // 1 week
         });
 
-        console.log('Login successful, redirecting...');
-    } catch (e) {
-        console.error('Login Error:', e);
+        console.log('[DEBUG] Login: Success, redirecting...');
+    } catch (e: any) {
+        console.error('[CRITICAL] Login Error:', e);
+        // Provide more detail in the log if possible
+        console.error('[CRITICAL] Error Details:', {
+            message: e.message,
+            code: e.code,
+            stack: e.stack
+        });
         throw e;
     }
 

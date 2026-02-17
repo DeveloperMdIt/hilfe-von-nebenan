@@ -8,7 +8,18 @@ export function PwaInstallBanner() {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        const checkDismissed = () => localStorage.getItem('pwa_banner_dismissed') === 'true';
+
+        // Initial check
+        if (checkDismissed()) {
+            setIsVisible(false);
+            return;
+        }
+
         const handler = (e: any) => {
+            // Check again inside handler in case it was dismissed in another tab
+            if (checkDismissed()) return;
+
             // Prevent Chrome 67 and earlier from automatically showing the prompt
             e.preventDefault();
             // Stash the event so it can be triggered later.
@@ -39,6 +50,12 @@ export function PwaInstallBanner() {
         // We've used the prompt, and can't use it again, throw it away
         setDeferredPrompt(null);
         setIsVisible(false);
+        localStorage.setItem('pwa_banner_dismissed', 'true');
+    };
+
+    const handleDismiss = () => {
+        setIsVisible(false);
+        localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
     if (!isVisible) return null;
@@ -64,7 +81,7 @@ export function PwaInstallBanner() {
                         Installieren
                     </button>
                     <button
-                        onClick={() => setIsVisible(false)}
+                        onClick={handleDismiss}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors text-gray-400"
                     >
                         <X size={18} />

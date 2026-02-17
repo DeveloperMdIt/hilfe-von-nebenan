@@ -15,7 +15,7 @@ export function Footer() {
                             <div className="bg-amber-500 p-1.5 rounded-lg">
                                 <Heart className="text-white fill-white" size={20} />
                             </div>
-                            <span className="text-xl font-black tracking-tight dark:text-white">Nachbarschafts-Helden</span>
+                            <span className="text-xl font-black tracking-tight dark:text-white">Nachbarschafts Helden</span>
                         </Link>
                         <p className="text-sm leading-6 text-gray-600 dark:text-zinc-400 max-w-xs">
                             Deine lokale Plattform für Nachbarschaftshilfe.
@@ -117,7 +117,7 @@ export function Footer() {
 
                 <div className="mt-16 border-t border-gray-100 dark:border-zinc-800 pt-8 sm:mt-20 lg:mt-24 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-xs leading-5 text-gray-400 dark:text-zinc-500">
-                        &copy; {currentYear} Nachbarschafts-Helden. Ein Projekt von MD IT Solutions.
+                        &copy; {currentYear} Nachbarschafts Helden. Ein Projekt von MD IT Solutions.
                     </p>
                     <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-zinc-500">
                         <span>Made with ❤️ for the community</span>
