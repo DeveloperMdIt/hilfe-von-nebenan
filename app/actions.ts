@@ -14,6 +14,7 @@ import { createTaskSchema, registerSchema, loginSchema } from '@/lib/validation'
 import { checkRateLimit } from '@/lib/ratelimit';
 import { checkContentModeration } from '@/lib/moderation';
 import { reports as reportsTable } from '@/lib/schema';
+import { ensureZipCoordinates } from '@/lib/self-healing';
 
 export async function createTask(formData: FormData) {
     try {
@@ -213,6 +214,11 @@ export async function registerUser(formData: FormData) {
                     .set({ creditsCents: (referrer.creditsCents || 0) + 100 })
                     .where(eq(users.id, referrerId));
             }
+        }
+
+        // Trigger self-healing for the ZIP code
+        if (zipCode) {
+            await ensureZipCoordinates(zipCode);
         }
 
         await db.insert(users).values({
@@ -971,6 +977,11 @@ export async function updateUserProfile(prevState: any, formData: FormData) {
 
     console.log('Update Profile Payload:', data);
     try {
+        // Trigger self-healing for the ZIP code
+        if (zipCode) {
+            await ensureZipCoordinates(zipCode);
+        }
+
         await db.update(users).set(data).where(eq(users.id, id));
         revalidatePath('/profile');
         return { success: true };

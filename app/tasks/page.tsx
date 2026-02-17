@@ -17,28 +17,7 @@ export default async function TasksPage(props: {
     const category = params.category;
     const radius = params.radius || 'all';
 
-    // 1. Get user's own ZIP (approximate center for search if none provided)
-    // For now we'll assume a default or use the search term if it looks like a ZIP
-    let centerZip = '10115'; // Default Berlin
-    if (search && /^\d{5}$/.test(search)) {
-        centerZip = search;
-    }
-
-    // Get center coordinates
-    const centerRes = await db.select().from(zipCoordinates).where(eq(zipCoordinates.zipCode, centerZip)).limit(1);
-    const center = centerRes[0];
-
-    // Construct filters
-    const filters: (SQL<unknown> | undefined)[] = [
-        eq(tasks.isActive, true),
-        eq(tasks.moderationStatus, 'approved')
-    ];
-    if (search && !/^\d{5}$/.test(search)) {
-        filters.push(or(ilike(tasks.title, `%${search}%`), ilike(tasks.description, `%${search}%`)));
-    }
-    if (category) filters.push(eq(tasks.category, category));
-
-    // Get current user for radius feature
+    // 1. Get current user for radius feature & default center
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
     let userZip = undefined;
@@ -48,6 +27,29 @@ export default async function TasksPage(props: {
         if (userRes.length > 0) {
             userZip = userRes[0].zipCode || undefined;
         }
+    }
+
+    // 2. Determine Map Center
+    // Priority: Search Term (if ZIP) > User ZIP > First Task's ZIP > Default (Berlin)
+    let centerZip = userZip || '';
+    if (search && /^\d{5}$/.test(search)) {
+        centerZip = search;
+    }
+
+    // Attempt to get coordinates
+    let center = null;
+    if (centerZip) {
+        const centerRes = await db.select().from(zipCoordinates).where(eq(zipCoordinates.zipCode, centerZip)).limit(1);
+        center = centerRes[0];
+    }
+
+    // Construct filters
+    const filters: (SQL<unknown> | undefined)[] = [
+        eq(tasks.isActive, true),
+        eq(tasks.moderationStatus, 'approved')
+    ];
+    if (search && !/^\d{5}$/.test(search)) {
+        filters.push(or(ilike(tasks.title, `%${search}%`), ilike(tasks.description, `%${search}%`)));
     }
 
     // Geographical sorting and filtering
@@ -78,6 +80,19 @@ COALESCE((6371 * acos(
         .where(and(...filters.filter((f): f is SQL<unknown> => f !== undefined)))
         .orderBy(desc(tasks.createdAt));
 
+    // 3. Post-fetch Fallback: Center on first task if still no center
+    if (!center && allTasks.length > 0) {
+        const firstWithCoords = allTasks.find(t => t.latitude && t.longitude);
+        if (firstWithCoords) {
+            center = { latitude: firstWithCoords.latitude, longitude: firstWithCoords.longitude } as any;
+        }
+    }
+
+    // Final default fallback (Berlin) if still nothing
+    if (!center) {
+        center = { latitude: 52.5200, longitude: 13.4050 } as any;
+    }
+
     // Apply radius filter in memory
     const filteredTasks = radius === 'all' || !center
         ? allTasks
@@ -105,12 +120,6 @@ COALESCE((6371 * acos(
                         <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">H</div>
                         Nachbarschafts-Helden
                     </Link>
-                    <Link
-                        href="/tasks/new"
-                        className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
-                    >
-                        <span>+</span> Auftrag erstellen
-                    </Link>
                 </div>
             </div>
 
@@ -125,9 +134,17 @@ COALESCE((6371 * acos(
                     <div className="lg:col-span-3 space-y-8">
                         {/* Map */}
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {category ? `Kategorie: ${getCategoryLabel(category)}` : search ? `Suche: "${search}"` : 'Jederzeit Hilfe finden'}
-                            </h2>
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {category ? `Kategorie: ${category.split(',').map(c => getCategoryLabel(c)).join(', ')}` : search ? `Suche: "${search}"` : 'Jederzeit Hilfe finden'}
+                                </h2>
+                                <Link
+                                    href="/tasks/new"
+                                    className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
+                                >
+                                    <span>+</span> Auftrag erstellen
+                                </Link>
+                            </div>
                             <div className="bg-white dark:bg-zinc-900 rounded-3xl p-1 shadow-sm border border-gray-200 dark:border-zinc-800 h-[500px] lg:h-[600px] relative">
                                 <TaskMapClient
                                     tasks={mapData}

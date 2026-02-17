@@ -105,34 +105,47 @@ export function FilterSidebar() {
 
             {/* Categories */}
             <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kategorie</label>
+                <div className="flex justify-between items-center">
+                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kategorie</label>
+                    <span className="text-[10px] text-gray-400 font-medium">Mehrfachauswahl möglich</span>
+                </div>
                 <div className="space-y-2">
                     <label className="flex items-center gap-3 cursor-pointer group">
                         <input
-                            type="radio"
-                            name="category"
+                            type="checkbox"
                             checked={!currentCategory}
                             onChange={() => updateParams({ category: null })}
-                            className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300"
+                            className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                         />
                         <span className={`text-sm ${!currentCategory ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
                             Alle Kategorien
                         </span>
                     </label>
-                    {TASK_CATEGORIES.map((cat) => (
-                        <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="category"
-                                checked={currentCategory === cat.slug}
-                                onChange={() => updateParams({ category: cat.slug })}
-                                className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300"
-                            />
-                            <span className={`text-sm ${currentCategory === cat.slug ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
-                                {cat.name}
-                            </span>
-                        </label>
-                    ))}
+                    {TASK_CATEGORIES.map((cat) => {
+                        const isSelected = currentCategory?.split(',').includes(cat.slug);
+                        return (
+                            <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={!!isSelected}
+                                    onChange={(e) => {
+                                        const current = currentCategory ? currentCategory.split(',') : [];
+                                        let newCategories;
+                                        if (e.target.checked) {
+                                            newCategories = [...current, cat.slug];
+                                        } else {
+                                            newCategories = current.filter(c => c !== cat.slug);
+                                        }
+                                        updateParams({ category: newCategories.length > 0 ? newCategories.join(',') : null });
+                                    }}
+                                    className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                                />
+                                <span className={`text-sm ${isSelected ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                                    {cat.name}
+                                </span>
+                            </label>
+                        );
+                    })}
                 </div>
             </div>
 
