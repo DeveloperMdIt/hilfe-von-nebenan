@@ -1338,13 +1338,6 @@ export async function rejectTask(taskId: string) {
     revalidatePath('/tasks');
 }
 
-export async function toggleTaskActive(taskId: string, isActive: boolean) {
-    await db.update(tasks)
-        .set({ isActive })
-        .where(eq(tasks.id, taskId));
-    revalidatePath('/admin/tasks');
-    revalidatePath('/tasks');
-}
 
 
 export async function getTasksInRadius(userZip: string, radiusKm: number) {
