@@ -8,6 +8,7 @@ import TaskMapClient from './TaskMapClient'; // Ensure this wrapper handles new 
 import { FilterSidebar } from '@/components/tasks/FilterSidebar';
 import { cookies } from 'next/headers';
 import { getCategoryLabel } from '@/lib/constants';
+import { ensureZipCoordinates } from '@/lib/self-healing';
 
 export default async function TasksPage(props: {
     searchParams: Promise<{ search?: string; category?: string; radius?: string }>
@@ -41,6 +42,12 @@ export default async function TasksPage(props: {
     if (centerZip) {
         const centerRes = await db.select().from(zipCoordinates).where(eq(zipCoordinates.zipCode, centerZip)).limit(1);
         center = centerRes[0];
+
+        // Self-Healing: If coordinates missing for center ZIP, try to fetch them
+        if (!center) {
+            console.log(`Self-healing coordinates for ZIP: ${centerZip}`);
+            center = await ensureZipCoordinates(centerZip);
+        }
     }
 
     // Construct filters
