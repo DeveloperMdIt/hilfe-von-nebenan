@@ -16,18 +16,19 @@ export default function LoginPage() {
     const [resendMessage, setResendMessage] = useState('');
     const timeoutMsg = searchParams.get('reason') === 'timeout';
 
-    // Update modal visibility when login error is 'unverified'
+    // Update modal visibility when login error is 'unverified' or after registration
     useEffect(() => {
-        if (state?.error === 'unverified') {
+        if (state?.error === 'unverified' || searchParams.get('registered') === 'true') {
             setModalVisible(true);
         }
-    }, [state]);
+    }, [state, searchParams]);
 
     const handleResend = async () => {
-        if (!state?.email) return;
+        const email = state?.email || searchParams.get('email');
+        if (!email) return;
         setResendStatus('loading');
         try {
-            await resendVerificationEmail(state.email);
+            await resendVerificationEmail(email);
             setResendStatus('success');
             setResendMessage('Der Verifizierungs-Link wurde erneut an deine E-Mail-Adresse gesendet.');
         } catch (error: any) {
@@ -60,7 +61,10 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white">E-Mail bestätigen</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Damit du Nachbarschafts-Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen. Wir haben dir einen Link an <span className="font-bold text-gray-900 dark:text-white">{state?.email}</span> gesendet.
+                                {searchParams.get('registered') === 'true'
+                                    ? "Registrierung erfolgreich! Damit du Nachbarschafts-Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
+                                    : "Damit du Nachbarschafts-Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
+                                } Wir haben dir einen Link an <span className="font-bold text-gray-900 dark:text-white">{state?.email || searchParams.get('email')}</span> gesendet.
                             </p>
                         </div>
 
@@ -141,17 +145,7 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    {searchParams.get('registered') === 'true' && (
-                        <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm font-bold flex items-center gap-3 border border-green-100 dark:border-green-800">
-                            <CheckCircle2 size={20} className="shrink-0" />
-                            <div>
-                                <p>Registrierung erfolgreich!</p>
-                                <p className="text-xs font-normal mt-1 text-green-600 dark:text-green-500">
-                                    Bitte schau in dein E-Mail-Postfach und bestätige deine Anmeldung.
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                    {/* Redundant, handled by Modal now */}
 
                     {state?.error && state.error !== 'unverified' && (
                         <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium">

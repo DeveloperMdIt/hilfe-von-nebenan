@@ -279,7 +279,7 @@ export async function registerUser(formData: FormData) {
         return { error: 'Ein Fehler ist aufgetreten. Bitte später erneut versuchen.' };
     }
 
-    redirect('/login?registered=true');
+    redirect(`/login?registered=true&email=${encodeURIComponent(email)}`);
 }
 
 export async function getZipCodeStats(zipCode: string) {
