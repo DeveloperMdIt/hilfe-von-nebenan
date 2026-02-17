@@ -1,8 +1,8 @@
 'use client';
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useRef } from 'react';
 import { getTasksInRadius } from '@/app/actions';
 import { Loader2 } from 'lucide-react';
 
@@ -48,19 +48,40 @@ export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515]
     const [radius, setRadius] = useState<number>(userZip ? 25 : 0);
     const [mapCenter, setMapCenter] = useState<[number, number]>(center);
     const [isPending, startTransition] = useTransition();
+    const timeoutRef = useRef<NodeJS.Timeout>(null);
 
+    // Sync initialTasks when they change (e.g. from server filtering)
+    useEffect(() => {
+        if (initialTasks) {
+            setTasks(initialTasks);
+        }
+    }, [initialTasks]);
+
+    // Handle radius change with debounce
     useEffect(() => {
         if (!userZip || radius === 0) return;
 
-        startTransition(async () => {
-            const res = await getTasksInRadius(userZip, radius);
-            if (res.success && res.tasks) {
-                setTasks(res.tasks);
-                if (res.center) {
-                    setMapCenter([res.center.lat, res.center.lng]);
+        // Clear previous timeout
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        // Set new timeout (debounce 500ms)
+        timeoutRef.current = setTimeout(() => {
+            startTransition(async () => {
+                const res = await getTasksInRadius(userZip, radius);
+                if (res.success && res.tasks) {
+                    setTasks(res.tasks);
+                    if (res.center) {
+                        setMapCenter([res.center.lat, res.center.lng]);
+                    }
                 }
-            }
-        });
+            });
+        }, 500);
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
     }, [radius, userZip]);
 
     return (
@@ -78,16 +99,16 @@ export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515]
                     <input
                         type="range"
                         id="radius"
-                        min="0"
-                        max="25"
-                        step="5"
+                        min="1"
+                        max="50"
+                        step="1"
                         value={radius}
                         onChange={(e) => setRadius(parseInt(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
                     />
                     <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                        <span>0km</span>
-                        <span>25km</span>
+                        <span>1km</span>
+                        <span>50km</span>
                     </div>
                 </div>
             )}
@@ -103,6 +124,16 @@ export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515]
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                {/* Visual Radius Circle */}
+                {userZip && mapCenter && radius > 0 && (
+                    <Circle
+                        center={mapCenter}
+                        radius={radius * 1000} // meters
+                        pathOptions={{ color: '#d97706', fillColor: '#d97706', fillOpacity: 0.1, weight: 1 }}
+                    />
+                )}
+
                 {tasks.map((task) => (
                     <Marker key={task.id} position={[task.latitude, task.longitude]}>
                         <Popup>
