@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations, tags, userTags } from '@/lib/schema';
+import { users, tasks, reviews, messages, subscriptionPlans, emailTemplates, settings, zipCodeActivations, archivedConversations, tags, userTags, zipCoordinates } from '@/lib/schema';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { eq, or, and, desc, sql, count, sum, lte, gte } from 'drizzle-orm';
@@ -187,6 +187,8 @@ export async function registerUser(formData: FormData) {
     const headersList = await headers();
     const ipAddress = headersList.get('x-forwarded-for') || 'unknown';
 
+    const refCode = formData.get('ref') as string | null;
+
     // Rate Limit: 5 registrations per hour per IP (prevent spam bots)
     if (!checkRateLimit(`register_${ipAddress}`, 5, 3600)) {
         return { error: 'Zu viele Registrierungsversuche. Bitte versuchen Sie es später erneut.' };
@@ -196,7 +198,23 @@ export async function registerUser(formData: FormData) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomUUID();
 
+    // Generate simple referral code: specific prefix + random string
+    const referralCode = `${name.substring(0, 3).toLowerCase()}${Math.random().toString(36).substring(2, 7)}`;
+
+    let referrerId = null;
+
     try {
+        if (refCode) {
+            const [referrer] = await db.select().from(users).where(eq(users.referralCode, refCode));
+            if (referrer) {
+                referrerId = referrer.id;
+                // Award Credits to referrer (e.g. 100 cents = 1 Euro)
+                await db.update(users)
+                    .set({ creditsCents: (referrer.creditsCents || 0) + 100 })
+                    .where(eq(users.id, referrerId));
+            }
+        }
+
         await db.insert(users).values({
             email,
             fullName: name,
@@ -208,6 +226,8 @@ export async function registerUser(formData: FormData) {
             acceptedPrivacyAt: new Date(),
             termsVersion: 'v1.0',
             ipAddress: ipAddress,
+            referralCode,
+            referredBy: referrerId,
         });
 
         // Send verification email
@@ -447,6 +467,11 @@ export async function sendInvitationAction(recipientEmail: string) {
 export async function logoutUser() {
     (await cookies()).delete('userId');
     redirect('/login');
+}
+
+export async function autoLogoutUser() {
+    (await cookies()).delete('userId');
+    redirect('/login?reason=timeout');
 }
 
 export async function updateUser(formData: FormData) {
@@ -1286,4 +1311,66 @@ export async function toggleTaskActive(taskId: string, isActive: boolean) {
         .where(eq(tasks.id, taskId));
     revalidatePath('/admin/tasks');
     revalidatePath('/tasks');
+}
+
+// Map Radius Feature
+export async function getTasksInRadius(centerZip: string, radiusKm: number = 25) {
+    noStore();
+    try {
+        // 1. Get coordinates of the center ZIP
+        const centerCoords = await db.select().from(zipCoordinates).where(eq(zipCoordinates.zipCode, centerZip));
+        if (!centerCoords.length) {
+            return { error: 'PLZ nicht gefunden' };
+        }
+        const { latitude: lat1, longitude: lon1 } = centerCoords[0];
+
+        const earthRadiusKm = 6371;
+
+        // Use raw SQL for distance calculation
+        const result = await db.execute(sql`
+            SELECT 
+                t.*, 
+                u.zip_code, 
+                zc.latitude, 
+                zc.longitude,
+                (
+                    ${earthRadiusKm} * acos(
+                        cos(radians(${lat1})) * cos(radians(zc.latitude)) * cos(radians(zc.longitude) - radians(${lon1})) + 
+                        sin(radians(${lat1})) * sin(radians(zc.latitude))
+                    )
+                ) AS distance
+            FROM tasks t
+            JOIN users u ON t.customer_id = u.id
+            JOIN zip_coordinates zc ON u.zip_code = zc.zip_code
+            WHERE t.status = 'open' 
+            AND t.is_active = true
+            AND t.moderation_status = 'approved'
+            AND (
+                ${earthRadiusKm} * acos(
+                    cos(radians(${lat1})) * cos(radians(zc.latitude)) * cos(radians(zc.longitude) - radians(${lon1})) + 
+                    sin(radians(${lat1})) * sin(radians(zc.latitude))
+                )
+            ) <= ${radiusKm}
+            ORDER BY distance ASC
+            LIMIT 100;
+        `);
+
+        // Map raw result to friendly object
+        const tasksWithDistance = result.map((row: any) => ({
+            id: row.id,
+            title: row.title,
+            description: row.description,
+            priceCents: row.price_cents,
+            zipCode: row.zip_code,
+            latitude: row.latitude,
+            longitude: row.longitude,
+            distance: row.distance
+        }));
+
+        return { success: true, tasks: tasksWithDistance, center: { lat: lat1, lng: lon1 } };
+
+    } catch (error) {
+        console.error('Error fetching tasks in radius:', error);
+        return { error: 'Fehler beim Laden der Karte.' };
+    }
 }

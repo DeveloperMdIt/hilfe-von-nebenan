@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { db } from '@/lib/db';
 import { tasks, reviews } from '@/lib/schema';
 import { eq, or, and, desc } from 'drizzle-orm';
+import { getCategoryLabel } from '@/lib/constants';
 
 export default async function UserTaskList({ userId }: { userId: string }) {
     // 1. Tasks created by the user (as Customer)

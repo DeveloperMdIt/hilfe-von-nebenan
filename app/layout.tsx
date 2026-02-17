@@ -64,6 +64,7 @@ import { getZipCodeStats } from "./actions";
 import { headers } from "next/headers";
 
 import { ActivationRedirect } from "@/components/auth/ActivationRedirect";
+import { AutoLogout } from "@/components/auth/AutoLogout";
 
 export default async function RootLayout({
   children,
@@ -126,6 +127,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-100`}
       >
         <ActivityTracker />
+        {userId && <AutoLogout />}
         <ActivationRedirect isActive={userActive} role={userRole} />
         <Header user={user} unreadCount={unreadCount} />
         <main className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col">

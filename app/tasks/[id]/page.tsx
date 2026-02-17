@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import { confirmTaskCompletion, submitReview } from '../../actions';
 import { DeleteTaskButton } from "@/components/tasks/DeleteTaskButton";
 import { formatName } from '../../../lib/utils';
+import { getCategoryLabel } from '@/lib/constants';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -79,7 +80,7 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                         <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
                             <div className="flex justify-between items-start mb-6">
                                 <span className="px-4 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-widest border border-amber-100 dark:border-amber-900/10">
-                                    {task.category || 'Allgemein'}
+                                    {getCategoryLabel(task.category)}
                                 </span>
                                 <div className="text-right">
                                     <p className="text-gray-500 text-xs font-bold uppercase tracking-tighter mb-1">Budget</p>

@@ -39,6 +39,10 @@ export const users = pgTable('users', {
     bic: varchar('bic', { length: 20 }),
     accountHolderName: text('account_holder_name'),
     stripeAccountId: varchar('stripe_account_id', { length: 255 }),
+    // Referral System
+    referralCode: varchar('referral_code', { length: 20 }).unique(),
+    referredBy: uuid('referred_by'), // Self-reference defined below to avoid circular dependency issues if possible, or just use raw uuid
+    creditsCents: integer('credits_cents').default(0),
 });
 
 export const archivedConversations = pgTable('archived_conversations', {

@@ -4,15 +4,21 @@ import { useState, useTransition } from 'react';
 import { createTask } from '../../app/actions';
 import { ShoppingBag, PawPrint, Hammer, Leaf, Truck, Heart, Loader2, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { TASK_CATEGORIES } from '@/lib/constants';
 
-const categories = [
-    { name: 'Einkaufen', icon: ShoppingBag, slug: 'shopping' },
-    { name: 'Tierbetreuung', icon: PawPrint, slug: 'pets' },
-    { name: 'Handwerk', icon: Hammer, slug: 'diy' },
-    { name: 'Garten', icon: Leaf, slug: 'garden' },
-    { name: 'Transport', icon: Truck, slug: 'transport' },
-    { name: 'Pflege', icon: Heart, slug: 'care' },
-];
+const ICON_MAP: Record<string, any> = {
+    shopping: ShoppingBag,
+    pets: PawPrint,
+    diy: Hammer,
+    garden: Leaf,
+    transport: Truck,
+    care: Heart,
+};
+
+const categories = TASK_CATEGORIES.map(cat => ({
+    ...cat,
+    icon: ICON_MAP[cat.slug] || ShoppingBag
+}));
 
 export function CreateTaskForm() {
     const [isPending, startTransition] = useTransition();
@@ -109,6 +115,10 @@ export function CreateTaskForm() {
                 <label htmlFor="description" className="block text-sm font-black text-gray-700 dark:text-gray-300 ml-1">
                     Beschreibung
                 </label>
+                <p className="text-xs text-gray-500 mb-2 ml-1">
+                    Bitte verzichte auf persönliche Kontaktdaten (Telefon, E-Mail) im Text.
+                    Anstößige oder diskriminierende Inhalte werden gefiltert.
+                </p>
                 <div className="mt-2">
                     <textarea
                         id="description"

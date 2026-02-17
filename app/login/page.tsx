@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { loginUser, resendVerificationEmail } from '../actions';
-import { HeartHandshake, Mail, Loader2, X, CheckCircle2 } from 'lucide-react';
-import { useActionState, useState } from 'react';
+import { HeartHandshake, Mail, Loader2, X, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { useActionState, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
     const [state, formAction, isPending] = useActionState(loginUser, null);
+    const searchParams = useSearchParams();
     const [showResendModal, setShowResendModal] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [resendMessage, setResendMessage] = useState('');
+    const timeoutMsg = searchParams.get('reason') === 'timeout';
 
     // Update modal visibility when login error is 'unverified'
     if (state?.error === 'unverified' && !modalVisible && !showResendModal) {
@@ -128,6 +131,13 @@ export default function LoginPage() {
                             Schön, dass du wieder da bist.
                         </p>
                     </div>
+
+                    {timeoutMsg && (
+                        <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 text-sm font-bold flex items-center gap-3 border border-amber-100 dark:border-amber-800">
+                            <ShieldAlert size={20} className="shrink-0" />
+                            Du wurdest aus Sicherheitsgründen automatisch ausgeloggt.
+                        </div>
+                    )}
 
                     {state?.error && state.error !== 'unverified' && (
                         <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium">

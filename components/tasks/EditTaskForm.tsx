@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { updateTask } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Check } from 'lucide-react';
+import { TASK_CATEGORIES } from '@/lib/constants';
 
 interface Task {
     id: string;
@@ -85,12 +86,11 @@ export function EditTaskForm({ task }: { task: Task }) {
                     defaultValue={task.category}
                     className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-amber-500 transition-all font-medium"
                 >
-                    <option value="Haushalt">Haushalt</option>
-                    <option value="Garten">Garten</option>
-                    <option value="Einkauf">Einkauf</option>
-                    <option value="Technik">Technik</option>
-                    <option value="Transport">Transport</option>
-                    <option value="Sonstiges">Sonstiges</option>
+                    {TASK_CATEGORIES.map((cat) => (
+                        <option key={cat.slug} value={cat.slug}>
+                            {cat.name}
+                        </option>
+                    ))}
                 </select>
             </div>
 

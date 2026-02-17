@@ -6,6 +6,8 @@ import { Crown, MapPin, Clock } from 'lucide-react';
 import { formatName } from '@/lib/utils';
 import TaskMapClient from './TaskMapClient';
 import SearchControls from './SearchControls';
+import { cookies } from 'next/headers';
+import { getCategoryLabel } from '@/lib/constants';
 
 export default async function TasksPage({
     searchParams,
@@ -38,6 +40,18 @@ export default async function TasksPage({
         filters.push(or(ilike(tasks.title, `%${search}%`), ilike(tasks.description, `%${search}%`)));
     }
     if (category) filters.push(eq(tasks.category, category));
+
+    // Get current user for radius feature
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    let userZip = undefined;
+
+    if (userId) {
+        const userRes = await db.select({ zipCode: users.zipCode }).from(users).where(eq(users.id, userId));
+        if (userRes.length > 0) {
+            userZip = userRes[0].zipCode || undefined;
+        }
+    }
 
     // Geographical sorting and filtering
     const allTasks = await db
@@ -118,6 +132,7 @@ COALESCE((6371 * acos(
                             tasks={mapData}
                             center={center ? [center.latitude, center.longitude] : undefined}
                             zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
+                            userZip={userZip}
                         />
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-60">
                             {/* Static list below map for accessibility/SEO */}
@@ -147,8 +162,8 @@ function TaskCard({ task }: { task: any }) {
     return (
         <div className="group bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
             <div className="flex justify-between items-start mb-4">
-                <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 capitalize">
-                    {task.category || 'Allgemein'}
+                <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                    {getCategoryLabel(task.category)}
                 </span>
                 <span className="font-bold text-lg">
                     {(task.priceCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}

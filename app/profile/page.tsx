@@ -7,6 +7,7 @@ import { eq, and } from 'drizzle-orm';
 import { CreditCard } from 'lucide-react';
 import ProfileForm from '@/components/profile/profile-form';
 import UserTaskList from '@/components/profile/user-task-list';
+import { InviteSection } from '@/components/profile/invite-section';
 
 export default async function ProfilePage() {
     const cookieStore = await cookies();
@@ -48,13 +49,22 @@ export default async function ProfilePage() {
                 <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-16 lg:grid-cols-2">
                     {/* Left Column: Profile Data */}
                     <div>
-                        <h3 className="text-xl font-semibold leading-7 text-gray-900 dark:text-white mb-6">Persönliche Daten</h3>
-                        <ProfileForm
-                            user={user}
-                            allTags={allTags}
-                            userTagIds={userTagIds}
-                            categories={categories}
-                        />
+                        <div className="mb-8">
+                            <h3 className="text-xl font-semibold leading-7 text-gray-900 dark:text-white mb-6">Persönliche Daten</h3>
+
+                            {/* Invite Section */}
+                            <InviteSection
+                                referralCode={user.referralCode || user.id.substring(0, 8)}
+                                creditsCents={user.creditsCents || 0}
+                            />
+
+                            <ProfileForm
+                                user={user}
+                                allTags={allTags}
+                                userTagIds={userTagIds}
+                                categories={categories}
+                            />
+                        </div>
 
                         <div className="mt-10 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
                             <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200">Dein Status</h4>
