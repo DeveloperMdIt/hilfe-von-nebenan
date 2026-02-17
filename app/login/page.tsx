@@ -17,9 +17,11 @@ export default function LoginPage() {
     const timeoutMsg = searchParams.get('reason') === 'timeout';
 
     // Update modal visibility when login error is 'unverified'
-    if (state?.error === 'unverified' && !modalVisible && !showResendModal) {
-        setModalVisible(true);
-    }
+    useEffect(() => {
+        if (state?.error === 'unverified') {
+            setModalVisible(true);
+        }
+    }, [state]);
 
     const handleResend = async () => {
         if (!state?.email) return;
