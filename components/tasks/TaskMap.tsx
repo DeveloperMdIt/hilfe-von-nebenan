@@ -2,9 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
-import { useEffect, useState, useTransition, useRef } from 'react';
-import { getTasksInRadius } from '@/app/actions';
-import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 // Fix for default marker icons in Leaflet with Next.js
 const DefaultIcon = L.icon({
@@ -16,7 +14,7 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-interface TaskMarker {
+export interface TaskMarker {
     id: string;
     title: string;
     description: string;
@@ -28,10 +26,11 @@ interface TaskMarker {
 }
 
 interface TaskMapProps {
-    initialTasks: TaskMarker[];
+    tasks: TaskMarker[];
     center?: [number, number];
     zoom?: number;
     userZip?: string;
+    radius?: number;
 }
 
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
@@ -55,55 +54,7 @@ function groupTasksByLocation(tasks: TaskMarker[]) {
     return groups;
 }
 
-export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515], zoom = 6, userZip }: TaskMapProps) {
-    const [tasks, setTasks] = useState<TaskMarker[]>(initialTasks || []);
-    // Only enable radius search if we have a userZip (activatable area)
-    const [radius, setRadius] = useState<number>(userZip ? 25 : 0);
-    const [mapCenter, setMapCenter] = useState<[number, number]>(center);
-    const [isPending, startTransition] = useTransition();
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Sync initialTasks when they change (e.g. from server filtering)
-    useEffect(() => {
-        if (initialTasks) {
-            setTasks(initialTasks);
-        }
-    }, [initialTasks]);
-
-    // Handle radius change with debounce (only filters list, not map pins anymore)
-    useEffect(() => {
-        if (!userZip || radius === 0) return;
-
-        // Clear previous timeout
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
-
-        // Set new timeout (debounce 500ms)
-        timeoutRef.current = setTimeout(() => {
-            startTransition(async () => {
-                const res = await getTasksInRadius(userZip, radius);
-
-                // Cast to any because the server action return type might not be fully inferred in client yet
-                const data = res as any;
-
-                if (data.success && (data.tasks || data.allTasks)) {
-                    // USER REQUEST: Always show ALL tasks on map
-                    const globalTasks = data.allTasks || data.tasks;
-                    setTasks(globalTasks);
-
-                    if (data.center) {
-                        setMapCenter([data.center.lat, data.center.lng]);
-                    }
-                }
-            });
-        }, 500);
-
-        return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        };
-    }, [radius, userZip]);
-
+export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom = 6, userZip, radius = 0 }: TaskMapProps) {
     const taskGroups = groupTasksByLocation(tasks);
 
     // Create custom cluster icon
@@ -117,50 +68,23 @@ export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515]
     };
 
     return (
-        <div className="relative h-[500px] w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 shadow-inner z-0 group">
-
-            {/* Radius Slider Overlay */}
-            {userZip && (
-                <div className="absolute top-4 right-4 z-[1000] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-gray-100 dark:border-zinc-800 w-64">
-                    <div className="flex justify-between items-center mb-2">
-                        <label htmlFor="radius" className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            Umkreis: <span className="text-amber-600">{radius > 50 ? 'Alle' : `${radius} km`}</span>
-                        </label>
-                        {isPending && <Loader2 size={12} className="animate-spin text-amber-600" />}
-                    </div>
-                    <input
-                        type="range"
-                        id="radius"
-                        min="1"
-                        max="51" // 51 creates a "snap" point for "All"
-                        step="1"
-                        value={radius}
-                        onChange={(e) => setRadius(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                    />
-                    <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                        <span>1km</span>
-                        <span>∞</span>
-                    </div>
-                </div>
-            )}
-
+        <div className="relative h-[600px] w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 shadow-inner z-0 group">
             <MapContainer
-                center={mapCenter}
+                center={center}
                 zoom={userZip ? 11 : zoom}
                 scrollWheelZoom={true}
                 className="h-full w-full"
             >
-                <ChangeView center={mapCenter} zoom={userZip ? 11 : zoom} />
+                <ChangeView center={center} zoom={userZip ? 11 : zoom} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
                 {/* Visual Radius Circle - Only show if not "All" (max 50) */}
-                {userZip && mapCenter && radius > 0 && radius <= 50 && (
+                {userZip && radius > 0 && radius <= 50 && (
                     <Circle
-                        center={mapCenter}
+                        center={center}
                         radius={radius * 1000} // meters
                         pathOptions={{ color: '#d97706', fillColor: '#d97706', fillOpacity: 0.1, weight: 1 }}
                     />

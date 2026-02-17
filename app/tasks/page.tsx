@@ -4,21 +4,18 @@ import { desc, ilike, eq, and, sql, or, SQL } from 'drizzle-orm';
 import Link from 'next/link';
 import { Crown, MapPin, Clock } from 'lucide-react';
 import { formatName } from '@/lib/utils';
-import TaskMapClient from './TaskMapClient';
-import SearchControls from './SearchControls';
+import TaskMapClient from './TaskMapClient'; // Ensure this wrapper handles new props
+import { FilterSidebar } from '@/components/tasks/FilterSidebar';
 import { cookies } from 'next/headers';
 import { getCategoryLabel } from '@/lib/constants';
 
-export default async function TasksPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ search?: string; category?: string; radius?: string; view?: 'list' | 'map' }>;
+export default async function TasksPage(props: {
+    searchParams: Promise<{ search?: string; category?: string; radius?: string }>
 }) {
-    const params = await searchParams;
+    const params = await props.searchParams;
     const search = params.search;
     const category = params.category;
     const radius = params.radius || 'all';
-    const view = params.view || 'list';
 
     // 1. Get user's own ZIP (approximate center for search if none provided)
     // For now we'll assume a default or use the search term if it looks like a ZIP
@@ -86,7 +83,7 @@ COALESCE((6371 * acos(
         ? allTasks
         : allTasks.filter(t => t.distance !== null && t.distance <= parseInt(radius));
 
-    const mapData = filteredTasks
+    const mapData = allTasks // Use allTasks for map (Global View filtered by category/search)
         .filter(t => t.latitude && t.longitude)
         .map(t => ({
             id: t.id,
@@ -95,64 +92,77 @@ COALESCE((6371 * acos(
             priceCents: t.priceCents,
             latitude: t.latitude!,
             longitude: t.longitude!,
-            zipCode: t.zipCode || ''
+            zipCode: t.zipCode || '',
+            distance: t.distance
         }));
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-black font-[family-name:var(--font-geist-sans)]">
-            {/* Header with Search */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <Link href="/" className="text-xl font-bold whitespace-nowrap">Nachbarschafts-Helden</Link>
-                    <SearchControls
-                        search={search}
-                        category={category}
-                        radius={radius}
-                        view={view}
-                    />
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-                    <h1 className="text-3xl font-bold">
-                        {search ? `Ergebnisse für "${search}"` : category ? `Kategorie: ${category}` : 'Aktuelle Aufträge'}
-                    </h1>
+            {/* Header */}
+            <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-10 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                    <Link href="/" className="text-xl font-bold whitespace-nowrap flex items-center gap-2">
+                        <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">H</div>
+                        Nachbarschafts-Helden
+                    </Link>
                     <Link
                         href="/tasks/new"
-                        className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm"
+                        className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
                     >
                         <span>+</span> Auftrag erstellen
                     </Link>
                 </div>
+            </div>
 
-                {view === 'map' ? (
-                    <div className="space-y-6">
-                        <TaskMapClient
-                            initialTasks={mapData}
-                            center={center ? [center.latitude, center.longitude] : undefined}
-                            zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
-                            userZip={userZip}
-                        />
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-60">
-                            {/* Static list below map for accessibility/SEO */}
-                            {filteredTasks.slice(0, 3).map(t => <TaskCard key={t.id} task={t} />)}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
+                    {/* Sidebar */}
+                    <div className="lg:col-span-1">
+                        <FilterSidebar />
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="lg:col-span-3 space-y-8">
+                        {/* Map */}
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                {category ? `Kategorie: ${getCategoryLabel(category)}` : search ? `Suche: "${search}"` : 'Jederzeit Hilfe finden'}
+                            </h2>
+                            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-1 shadow-sm border border-gray-200 dark:border-zinc-800 h-[500px] lg:h-[600px] relative">
+                                <TaskMapClient
+                                    tasks={mapData}
+                                    center={center ? [center.latitude, center.longitude] : undefined}
+                                    zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
+                                    userZip={userZip}
+                                    radius={parseInt(radius === 'all' ? '51' : radius)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* List */}
+                        <div>
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    Angebote in der Nähe
+                                    <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{filteredTasks.length}</span>
+                                </h3>
+                            </div>
+
+                            <div className="grid gap-6 md:grid-cols-2">
+                                {filteredTasks.map((task) => (
+                                    <TaskCard key={task.id} task={task} />
+                                ))}
+
+                                {filteredTasks.length === 0 && (
+                                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300">
+                                        <p className="text-lg font-medium">Keine Ergebnisse</p>
+                                        <p className="text-sm mt-1">Versuche den Umkreis zu erhöhen oder die Filter zu ändern.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                ) : (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredTasks.map((task) => (
-                            <TaskCard key={task.id} task={task} />
-                        ))}
-
-                        {filteredTasks.length === 0 && (
-                            <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300">
-                                <p className="text-lg">Keine Aufträge in diesem Bereich gefunden.</p>
-                                <Link href="/tasks" className="text-amber-600 hover:underline mt-2">Filter zurücksetzen</Link>
-                            </div>
-                        )}
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );
