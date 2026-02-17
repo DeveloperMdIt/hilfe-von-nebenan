@@ -128,8 +128,8 @@ COALESCE((6371 * acos(
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
                     {/* Sidebar */}
-                    <div className="lg:col-span-1">
-                        <FilterSidebar />
+                    <div className="lg:col-span-1 lg:h-[600px]">
+                        <FilterSidebar className="h-full" />
                     </div>
 
                     {/* Main Content */}

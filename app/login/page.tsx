@@ -141,6 +141,18 @@ export default function LoginPage() {
                         </div>
                     )}
 
+                    {searchParams.get('registered') === 'true' && (
+                        <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm font-bold flex items-center gap-3 border border-green-100 dark:border-green-800">
+                            <CheckCircle2 size={20} className="shrink-0" />
+                            <div>
+                                <p>Registrierung erfolgreich!</p>
+                                <p className="text-xs font-normal mt-1 text-green-600 dark:text-green-500">
+                                    Bitte schau in dein E-Mail-Postfach und bestätige deine Anmeldung.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {state?.error && state.error !== 'unverified' && (
                         <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm font-medium">
                             {state.error}

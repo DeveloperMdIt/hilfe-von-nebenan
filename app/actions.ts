@@ -996,8 +996,11 @@ export async function updateUserProfile(prevState: any, formData: FormData) {
         accountHolderName,
     };
 
-    if (dateOfBirth) {
-        data.dateOfBirth = new Date(dateOfBirth);
+    if (dateOfBirth && dateOfBirth !== '') {
+        const d = new Date(dateOfBirth);
+        if (!isNaN(d.getTime())) {
+            data.dateOfBirth = d;
+        }
     }
 
     if (password && password.trim() !== '') {
@@ -1008,7 +1011,8 @@ export async function updateUserProfile(prevState: any, formData: FormData) {
         data.password = await bcrypt.hash(password, 10);
     }
 
-    console.log('Update Profile Payload:', data);
+    console.log('--- PROFILE UPDATE DEBUG ---');
+    console.log('Update Payload:', data);
     try {
         // Trigger self-healing for the ZIP code
         if (zipCode) {

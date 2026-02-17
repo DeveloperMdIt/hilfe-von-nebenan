@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { TASK_CATEGORIES } from '@/lib/constants';
 import { useTransition, useState, useEffect } from 'react';
 
-export function FilterSidebar() {
+export function FilterSidebar({ className }: { className?: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
@@ -42,7 +42,7 @@ export function FilterSidebar() {
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 space-y-8 h-fit lg:sticky lg:top-24 shadow-sm">
+        <div className={`bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 space-y-8 shadow-sm ${className}`}>
 
             {/* Header */}
             <div className="flex justify-between items-center">
