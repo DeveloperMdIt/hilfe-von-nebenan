@@ -137,7 +137,10 @@ export function FilterSidebar({ className }: { className?: string }) {
                                     }}
                                     className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                                 />
-                                <span className={`text-sm ${isSelected ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}>
+                                <span
+                                    className={`text-sm ${isSelected ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}
+                                    title={cat.name}
+                                >
                                     {cat.name}
                                 </span>
                             </label>
