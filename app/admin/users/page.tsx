@@ -4,12 +4,16 @@ import { CreateUserModal } from '@/components/admin/create-user-modal';
 import { BadgeToggle } from '@/components/admin/badge-toggle';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import Link from 'next/link';
-import { desc } from 'drizzle-orm';
+import { desc, ilike, or } from 'drizzle-orm';
 import { UserCog, Pencil } from 'lucide-react';
 import { VerificationToggle } from '@/components/admin/verification-toggle';
+import { UserSearch } from '@/components/admin/user-search';
 
-export default async function UsersPage() {
-    const userList = await db.select({
+export default async function UsersPage(props: { searchParams: Promise<{ search?: string }> }) {
+    const searchParams = await props.searchParams;
+    const search = searchParams.search;
+
+    let query = db.select({
         id: users.id,
         fullName: users.fullName,
         email: users.email,
@@ -18,7 +22,22 @@ export default async function UsersPage() {
         isHelperBadge: users.isHelperBadge,
         isActive: users.isActive,
         createdAt: users.createdAt,
-    }).from(users).orderBy(desc(users.createdAt));
+        zipCode: users.zipCode,
+        city: users.city,
+    }).from(users).$dynamic();
+
+    if (search) {
+        query = query.where(
+            or(
+                ilike(users.fullName, `%${search}%`),
+                ilike(users.email, `%${search}%`),
+                ilike(users.zipCode, `%${search}%`),
+                ilike(users.city, `%${search}%`)
+            )
+        );
+    }
+
+    const userList = await query.orderBy(desc(users.createdAt));
 
     return (
         <div className="p-8">
@@ -31,6 +50,7 @@ export default async function UsersPage() {
                     <p className="text-sm text-gray-500 mt-1">Verwalten Sie alle registrierten Nachbarn und Admins.</p>
                 </div>
                 <div className="flex gap-4 items-center">
+                    <UserSearch />
                     <span className="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-zinc-800 rounded-full text-gray-600 dark:text-gray-400">
                         Gesamt: {userList.length}
                     </span>
@@ -44,7 +64,8 @@ export default async function UsersPage() {
                     <thead className="bg-gray-50 dark:bg-zinc-800/50">
                         <tr>
                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Name</th>
-                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-1/3">Email</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-1/4">Email</th>
+                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">PLZ / Ort</th>
                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Rolle</th>
                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest text-center whitespace-nowrap">Badge</th>
                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">Status</th>
@@ -61,7 +82,13 @@ export default async function UsersPage() {
                                     <div className="text-sm font-bold text-gray-900 dark:text-white truncate max-w-[150px]" title={user.fullName || ''}>{user.fullName || 'Kurzname fehlt'}</div>
                                 </td>
                                 <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                    <div className="truncate max-w-[250px] xl:max-w-none" title={user.email}>{user.email}</div>
+                                    <div className="truncate max-w-[200px] xl:max-w-none" title={user.email}>{user.email}</div>
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-900 dark:text-gray-200">{user.zipCode || '-'}</span>
+                                        <span className="text-xs text-gray-500">{user.city || '-'}</span>
+                                    </div>
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm">
                                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
@@ -112,6 +139,10 @@ export default async function UsersPage() {
                             <div>
                                 <h3 className="font-bold text-gray-900 dark:text-white text-lg">{user.fullName || 'Unbekannt'}</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 break-all">{user.email}</p>
+                                <div className="flex gap-2 text-xs text-gray-600 mt-1">
+                                    <span className="font-bold bg-gray-100 rounded px-1">{user.zipCode || 'PLZ?'}</span>
+                                    <span>{user.city || 'Ort?'}</span>
+                                </div>
                             </div>
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
                                 {user.role}
