@@ -28,21 +28,15 @@ export function ActivationRedirect({ isActive, role }: ActivationRedirectProps) 
             pathname.includes('/tasks') ||
             role === 'admin';
 
-        console.log(`[ActivationRedirect] Debug: pathname="${pathname}", isActive=${isActive}, role="${role}", isExempt=${isExempt}`);
-        console.log(`[ActivationRedirect] Check: startsWith(/tasks)=${pathname.startsWith('/tasks')}`);
-
         if (isExempt) {
-            console.log(`[ActivationRedirect] Path ${pathname} is exempt`);
             return;
         }
 
         if (!isActive) { // If not active and not exempt, redirect to waiting
-            console.log(`[Client] Redirecting to /waiting (pathname: ${pathname})`);
             router.replace('/waiting');
         }
 
         if (isActive && pathname === '/waiting') {
-            console.log(`[Client] Redirecting to home (pathname: ${pathname})`);
             router.replace('/');
         }
     }, [isActive, role, pathname, router]);
