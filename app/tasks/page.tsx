@@ -15,7 +15,7 @@ export default async function TasksPage(props: {
     const params = await props.searchParams;
     const search = params.search;
     const category = params.category;
-    const radius = params.radius || 'all';
+    const radius = params.radius || '15';
 
     // 1. Get current user for radius feature & default center
     const cookieStore = await cookies();
@@ -145,7 +145,7 @@ COALESCE((6371 * acos(
                             <TaskMapClient
                                 tasks={mapData}
                                 center={center ? [center.latitude, center.longitude] : undefined}
-                                zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
+                                zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '15' ? 11 : radius === '10' ? 12 : 13}
                                 userZip={userZip}
                                 radius={parseInt(radius === 'all' ? '51' : radius)}
                             />

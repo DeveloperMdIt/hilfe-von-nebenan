@@ -69,9 +69,7 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
 
     // Create custom single task icon
     const singleTaskIcon = L.divIcon({
-        html: `<div class="w-6 h-6 bg-amber-600 rounded-full border-2 border-white shadow-md flex items-center justify-center">
-                <div class="w-2 h-2 bg-white rounded-full"></div>
-               </div>`,
+        html: `<div class="flex items-center justify-center w-6 h-6 bg-amber-600 text-white rounded-full font-bold border-2 border-white shadow-md text-[10px]">1</div>`,
         className: 'custom-div-icon',
         iconSize: [24, 24],
         iconAnchor: [12, 12],

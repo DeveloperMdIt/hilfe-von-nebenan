@@ -12,7 +12,7 @@ export function FilterSidebar() {
 
     const currentSearch = searchParams.get('search') || '';
     const currentCategory = searchParams.get('category');
-    const currentRadius = searchParams.get('radius') || 'all';
+    const currentRadius = searchParams.get('radius') || '15';
 
     // Local state for radius to allow smooth sliding before URL update
     const [radiusValue, setRadiusValue] = useState<number>(currentRadius === 'all' ? 51 : parseInt(currentRadius));
