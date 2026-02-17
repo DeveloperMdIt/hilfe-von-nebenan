@@ -61,28 +61,38 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
     const createClusterIcon = (count: number) => {
         return L.divIcon({
             html: `<div class="flex items-center justify-center w-8 h-8 bg-amber-600 text-white rounded-full font-bold border-2 border-white shadow-lg">${count}</div>`,
-            className: 'custom-div-icon', // Empty class to remove default styles if needed
+            className: 'custom-div-icon',
             iconSize: [32, 32],
             iconAnchor: [16, 16],
         });
     };
 
+    // Create custom single task icon
+    const singleTaskIcon = L.divIcon({
+        html: `<div class="w-6 h-6 bg-amber-600 rounded-full border-2 border-white shadow-md flex items-center justify-center">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+               </div>`,
+        className: 'custom-div-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+    });
+
     return (
         <div className="relative h-[600px] w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 shadow-inner z-0 group">
             <MapContainer
                 center={center}
-                zoom={userZip ? 11 : zoom}
+                zoom={zoom}
                 scrollWheelZoom={true}
                 className="h-full w-full"
             >
-                <ChangeView center={center} zoom={userZip ? 11 : zoom} />
+                <ChangeView center={center} zoom={zoom} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
                 {/* Visual Radius Circle - Only show if not "All" (max 50) */}
-                {userZip && radius > 0 && radius <= 50 && (
+                {radius > 0 && radius <= 50 && (
                     <Circle
                         center={center}
                         radius={radius * 1000} // meters
@@ -96,7 +106,7 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
                     if (group.length === 1) {
                         const task = group[0];
                         return (
-                            <Marker key={task.id} position={position}>
+                            <Marker key={task.id} position={position} icon={singleTaskIcon}>
                                 <Popup>
                                     <div className="p-1 min-w-[150px]">
                                         <h3 className="font-bold text-sm mb-1">{task.title}</h3>

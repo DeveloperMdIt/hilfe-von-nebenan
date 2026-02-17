@@ -120,10 +120,18 @@ COALESCE((6371 * acos(
                         <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">H</div>
                         Nachbarschafts-Helden
                     </Link>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/tasks/new"
+                            className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
+                        >
+                            <span>+</span> Auftrag erstellen
+                        </Link>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
@@ -131,29 +139,16 @@ COALESCE((6371 * acos(
                     </div>
 
                     {/* Main Content */}
-                    <div className="lg:col-span-3 space-y-8">
+                    <div className="lg:col-span-3 space-y-6">
                         {/* Map */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {category ? `Kategorie: ${category.split(',').map(c => getCategoryLabel(c)).join(', ')}` : search ? `Suche: "${search}"` : 'Jederzeit Hilfe finden'}
-                                </h2>
-                                <Link
-                                    href="/tasks/new"
-                                    className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
-                                >
-                                    <span>+</span> Auftrag erstellen
-                                </Link>
-                            </div>
-                            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-1 shadow-sm border border-gray-200 dark:border-zinc-800 h-[500px] lg:h-[600px] relative">
-                                <TaskMapClient
-                                    tasks={mapData}
-                                    center={center ? [center.latitude, center.longitude] : undefined}
-                                    zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
-                                    userZip={userZip}
-                                    radius={parseInt(radius === 'all' ? '51' : radius)}
-                                />
-                            </div>
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-1 shadow-sm border border-gray-200 dark:border-zinc-800 h-[500px] lg:h-[600px] relative">
+                            <TaskMapClient
+                                tasks={mapData}
+                                center={center ? [center.latitude, center.longitude] : undefined}
+                                zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
+                                userZip={userZip}
+                                radius={parseInt(radius === 'all' ? '51' : radius)}
+                            />
                         </div>
 
                         {/* List */}
