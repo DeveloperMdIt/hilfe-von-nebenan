@@ -30,7 +30,7 @@ export function Header({ user, unreadCount = 0 }: {
                         <div className="h-8 w-8 bg-amber-600 rounded-lg flex items-center justify-center text-white">
                             <HeartHandshake size={20} />
                         </div>
-                        <span className="font-bold text-xl tracking-tight">Nachbarschafts-Helden</span>
+                        <span className="font-bold text-xl tracking-tight">Nachbarschafts Helden</span>
                     </Link>
                 </div>
 

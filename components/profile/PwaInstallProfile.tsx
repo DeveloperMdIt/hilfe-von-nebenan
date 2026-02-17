@@ -44,7 +44,7 @@ export function PwaInstallProfile() {
 
                 <div className="flex-1 text-center md:text-left">
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 md:mb-0">
-                        Nutze die Browser-Menü-Option um Nachbarschafts-Helden zum Startbildschirm hinzuzufügen für ein besseres Erlebnis.
+                        Nutze die Browser-Menü-Option um Nachbarschafts Helden zum Startbildschirm hinzuzufügen für ein besseres Erlebnis.
                     </p>
                 </div>
 

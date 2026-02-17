@@ -1,6 +1,6 @@
 {
-    "name": "Nachbarschafts-Helden",
-    "short_name": "Helden",
+    "name": "Nachbarschafts Helden",
+    "short_name": "Nachbarschafts Helden",
     "description": "Deine Nachbarschaftshilfe Plattform",
     "start_url": "/",
     "display": "standalone",

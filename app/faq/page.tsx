@@ -7,7 +7,7 @@ const faqs = [
         icon: <HelpCircle className="text-amber-600" size={20} />,
         questions: [
             {
-                q: "Was ist Nachbarschafts-Helden?",
+                q: "Was ist Nachbarschafts Helden?",
                 a: "Wir sind eine lokale Plattform, die Menschen, die Hilfe benötigen, mit hilfsbereiten Nachbarn verbindet. Ob Einkaufen, Hund ausführen oder kleine Reparaturen – hier finden Sie Unterstützung in Ihrer direkten Umgebung."
             },
             {

@@ -62,8 +62,8 @@ export default function LoginPage() {
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white">E-Mail bestätigen</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                                 {searchParams.get('registered') === 'true'
-                                    ? "Registrierung erfolgreich! Damit du Nachbarschafts-Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
-                                    : "Damit du Nachbarschafts-Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
+                                    ? "Registrierung erfolgreich! Damit du Nachbarschafts Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
+                                    : "Damit du Nachbarschafts Helden nutzen kannst, musst du erst deine E-Mail-Adresse bestätigen."
                                 } Wir haben dir einen Link an <span className="font-bold text-gray-900 dark:text-white">{state?.email || searchParams.get('email')}</span> gesendet.
                             </p>
                         </div>

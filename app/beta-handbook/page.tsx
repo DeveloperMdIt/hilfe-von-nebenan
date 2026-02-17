@@ -12,10 +12,10 @@ export default function BetaHandbookPage() {
                         Beta-Phase
                     </div>
                     <h1 className="text-5xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">
-                        🐞 Nachbarschafts-Helden Beta Handbuch
+                        🐞 Nachbarschafts Helden Beta Handbuch
                     </h1>
                     <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                        Vielen Dank, dass du uns dabei hilfst, Nachbarschafts-Helden stabil und sicher zu machen!
+                        Vielen Dank, dass du uns dabei hilfst, Nachbarschafts Helden stabil und sicher zu machen!
                     </p>
                 </div>
 
@@ -89,56 +89,57 @@ export default function BetaHandbookPage() {
                         {[
                             {
                                 id: 1,
-                                title: "1. Installation (PWA)",
+                                title: "1. App Installation (PWA)",
                                 icon: Smartphone,
                                 tasks: [
-                                    "Öffne die Seite in deinem mobilen Browser (Safari/Chrome).",
-                                    "Nutze den Banner auf der Startseite zur Installation.",
-                                    "Prüfe das Icon auf dem Homescreen und die Vollbild-Anzeige."
+                                    "Öffne die Seite auf deinem Handy.",
+                                    "Nutze den Installations-Banner (oder Browser-Menü).",
+                                    "Prüfe, ob 'Nachbarschafts Helden' unter dem Icon steht."
                                 ]
                             },
                             {
                                 id: 2,
-                                title: "2. Registrierung & Profil",
+                                title: "2. Account & Verifizierung",
                                 icon: User,
                                 tasks: [
-                                    "Erstelle einen neuen Account (Adress-Suche prüfen).",
-                                    "Prüfe die 10 Karma Gutschrift im Profil.",
-                                    "Profilbild und Daten ändern.",
-                                    "Passwort-Änderung & rechtliche Links testen."
+                                    "Registrierung mit E-Mail Verifizierung.",
+                                    "Profil vervollständigen (Adresse, Geburtsdatum für Sicherheit).",
+                                    "Profilbild hochladen und Daten ändern.",
+                                    "Testen der Passwort-Vergessen Funktion."
                                 ]
                             },
                             {
                                 id: 3,
-                                title: "3. Hilfe anbieten & suchen",
+                                title: "3. Hilfe-Missionen erstellen",
                                 icon: Wrench,
                                 tasks: [
-                                    "Erstelle einen Auftrag (Hilfegesuch) mit Bildern.",
-                                    "Nutze die Karte um Aufträge in der Nähe zu finden.",
-                                    "Filtere nach Kategorien (z.B. Garten, Technik).",
-                                    "Ändere Status (Beendet, Abgebrochen)."
+                                    "Erstelle ein Hilfegesuch mit Ort und Bildern.",
+                                    "Nutze die Karte, um Aufträge in deiner Nähe zu sehen.",
+                                    "Teste die verschiedenen Kategorien (z.B. Garten, Haushalt).",
+                                    "Aufträge bearbeiten oder stornieren."
                                 ]
                             },
                             {
                                 id: 4,
-                                title: "4. Der Ablauf (Das Herzstück!) ⭐",
+                                title: "4. Der Helden-Prozess ⭐",
                                 icon: Star,
                                 tasks: [
-                                    "Interagiere mit anderen Testern (Anfragen/Chats).",
-                                    "Akzeptiere eine Hilfe-Anfrage.",
-                                    "Simuliere die Bezahlung mit Testdaten.",
-                                    "Gib eine Bewertung ab nach dem Kontakt."
+                                    "Sende eine Hilfe-Anfrage an einen anderen Nutzer.",
+                                    "Chatte über das integrierte Nachrichtensystem.",
+                                    "Akzeptiere eine Hilfe-Zusagen.",
+                                    "Simuliere die Bezahlung mit den Test-Zahlungsdaten.",
+                                    "Gib eine ehrliche Bewertung nach dem Kontakt ab."
                                 ]
                             },
                             {
                                 id: 5,
-                                title: "5. Kommunikation & Layout",
-                                icon: MessageSquare,
+                                title: "5. Sicherheit & Vertrauen",
+                                icon: ShieldAlert,
                                 tasks: [
-                                    "Abonniere Push-Benachrichtigungen.",
-                                    "Teste Landscape-Modus auf dem Handy.",
-                                    "Feedback-Symbol (lila) testen.",
-                                    "Responsivität auf dem Desktop prüfen."
+                                    "Nutze den 'Melden' Button bei unpassenden Inhalten.",
+                                    "Prüfe die Push-Benachrichtigungen bei neuen Nachrichten.",
+                                    "Teste die App im Hell- und Dunkelmodus.",
+                                    "Feedback über das lila Symbol am Rand senden."
                                 ]
                             }
                         ].map((section) => (

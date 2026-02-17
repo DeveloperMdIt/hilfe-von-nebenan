@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Nachbarschafts-Helden",
-    template: "%s | Nachbarschafts-Helden"
+    default: "Nachbarschafts Helden",
+    template: "%s | Nachbarschafts Helden"
   },
   description: "Deine Plattform für Nachbarschaftshilfe. Einfach, lokal und sicher Hilfe finden oder anbieten.",
-  keywords: ["Nachbarschaftshilfe", "Held", "Hilfe", "Unterstützung", "Lokal", "Nachbarschafts-Helden"],
-  authors: [{ name: "Nachbarschafts-Helden Team" }],
+  keywords: ["Nachbarschaftshilfe", "Held", "Hilfe", "Unterstützung", "Lokal", "Nachbarschafts Helden"],
+  authors: [{ name: "Nachbarschafts Helden Team" }],
   openGraph: {
     type: "website",
     locale: "de_DE",
