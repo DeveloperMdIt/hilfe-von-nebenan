@@ -145,7 +145,7 @@ COALESCE((6371 * acos(
                             <TaskMapClient
                                 tasks={mapData}
                                 center={center ? [center.latitude, center.longitude] : undefined}
-                                zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '15' ? 11 : radius === '10' ? 12 : 13}
+                                zoom={radius === 'all' ? 6 : Math.max(9, Math.min(15, Math.round(14.8 - Math.log2(radiusNum / 1.5))))}
                                 userZip={userZip}
                                 radius={parseInt(radius === 'all' ? '51' : radius)}
                             />
