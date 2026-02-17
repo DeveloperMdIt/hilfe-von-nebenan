@@ -70,10 +70,17 @@ export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515]
         timeoutRef.current = setTimeout(() => {
             startTransition(async () => {
                 const res = await getTasksInRadius(userZip, radius);
-                if (res.success && res.tasks) {
-                    setTasks(res.tasks);
-                    if (res.center) {
-                        setMapCenter([res.center.lat, res.center.lng]);
+
+                // Cast to any because the server action return type might not be fully inferred in client yet
+                const data = res as any;
+
+                if (data.success && (data.tasks || data.allTasks)) {
+                    // USER REQUEST: Always show ALL tasks on map
+                    const globalTasks = data.allTasks || data.tasks;
+                    setTasks(globalTasks);
+
+                    if (data.center) {
+                        setMapCenter([data.center.lat, data.center.lng]);
                     }
                 }
             });

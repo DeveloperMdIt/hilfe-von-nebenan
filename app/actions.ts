@@ -1329,7 +1329,6 @@ export async function getTasksInRadius(userZip: string, radiusKm: number) {
         if (!center) return { success: false, error: 'ZIP coordinates not found' };
 
         // 2. Query tasks with distance calculation
-        // Haversine formula in SQL
         const distanceSql = sql<number>`
             (6371 * acos(
                 cos(radians(${center.lat})) * cos(radians(${zipCoordinates.latitude})) *
@@ -1355,20 +1354,62 @@ export async function getTasksInRadius(userZip: string, radiusKm: number) {
             .where(
                 and(
                     eq(tasks.isActive, true),
-                    eq(tasks.moderationStatus, 'approved'),
-                    lte(distanceSql, radiusKm) // Filter by radius at DB level for efficiency
+                    eq(tasks.moderationStatus, 'approved')
+                    // Removed radius filter for the map pins (we want all), 
+                    // BUT for this specific function which implies "InRadius", we should keep it?
+                    // The user wants ALL on map. So we need a new function or modify this one.
+                    // Let's create a new function `getAllTaskMarkers` or similar.
                 )
             )
-            .orderBy(distanceSql); // Show closest first
+            .orderBy(distanceSql);
+
+        // Filter returned tasks by radius ONLY for the list view usage, 
+        // OR return them all and let client filter?
+        // Better: Return ALL for map, but mark if they are in radius?
+        // Actually, let's keep this function as "getTasksInRadius" for list view
+        // and create a new one for valid map data.
+
+        // Wait, the map component calls this. If we want ALL tasks on map, 
+        // the map component should call a function that returns ALL tasks.
 
         return {
             success: true,
-            tasks: tasksWithDistance,
+            tasks: tasksWithDistance.filter(t => t.distance <= radiusKm), // explicit filter for list
+            allTasks: tasksWithDistance, // return all for map? No, payload too big if logic changes.
             center: center
         };
 
     } catch (error) {
         console.error('Error fetching tasks in radius:', error);
         return { success: false, error: 'Failed to fetch tasks' };
+    }
+}
+
+export async function getAllTaskMarkers() {
+    noStore();
+    try {
+        const result = await db
+            .select({
+                id: tasks.id,
+                title: tasks.title,
+                description: tasks.description,
+                priceCents: tasks.priceCents,
+                latitude: zipCoordinates.latitude,
+                longitude: zipCoordinates.longitude,
+                zipCode: users.zipCode,
+            })
+            .from(tasks)
+            .innerJoin(users, eq(tasks.customerId, users.id))
+            .innerJoin(zipCoordinates, eq(users.zipCode, zipCoordinates.zipCode))
+            .where(
+                and(
+                    eq(tasks.isActive, true),
+                    eq(tasks.moderationStatus, 'approved')
+                )
+            );
+
+        return { success: true, tasks: result };
+    } catch (error) {
+        return { success: false, error: 'Fehler beim Laden der Karten-Pins' };
     }
 }
