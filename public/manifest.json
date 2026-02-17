@@ -1,6 +1,6 @@
 {
-    "name": "HilfeVonNebenan",
-    "short_name": "HVN",
+    "name": "Nachbarschafts-Helden",
+    "short_name": "Helden",
     "description": "Deine Nachbarschaftshilfe Plattform",
     "start_url": "/",
     "display": "standalone",

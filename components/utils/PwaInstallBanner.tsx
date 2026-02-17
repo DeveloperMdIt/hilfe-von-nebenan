@@ -52,7 +52,7 @@ export function PwaInstallBanner() {
 
                 <div className="flex-1 relative z-10">
                     <h3 className="text-sm font-black text-gray-900 dark:text-white mb-1">App installieren</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Installiere LIR auf deinem Homescreen für den schnellen Zugriff.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Installiere Nachbarschafts-Helden auf deinem Homescreen für den schnellen Zugriff.</p>
                 </div>
 
                 <div className="flex items-center gap-2 relative z-10">

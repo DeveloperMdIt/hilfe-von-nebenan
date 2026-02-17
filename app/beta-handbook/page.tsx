@@ -12,10 +12,10 @@ export default function BetaHandbookPage() {
                         Beta-Phase
                     </div>
                     <h1 className="text-5xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">
-                        🐞 LIR Beta-Tester Handbuch
+                        🐞 Nachbarschafts-Helden Beta Handbuch
                     </h1>
                     <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                        Vielen Dank, dass du uns dabei hilfst, HilfeVonNebenan (LIR) stabil und sicher zu machen!
+                        Vielen Dank, dass du uns dabei hilfst, Nachbarschafts-Helden stabil und sicher zu machen!
                     </p>
                 </div>
 
@@ -57,7 +57,7 @@ export default function BetaHandbookPage() {
                     </div>
 
                     <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                        Um Zahlungen (Supporter/Patron/Gegenstände) zu testen, nutze bitte folgende Daten:
+                        Um Zahlungen (Supporter/Patron Abos) zu testen, nutze bitte folgende Daten:
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -110,24 +110,24 @@ export default function BetaHandbookPage() {
                             },
                             {
                                 id: 3,
-                                title: "3. Aufträge & Kategorien",
+                                title: "3. Hilfe anbieten & suchen",
                                 icon: Wrench,
                                 tasks: [
-                                    "Erstelle einen Auftrag mit Bildern.",
-                                    "Ändere Status (Beendet, Abgebrochen).",
-                                    "Suche & Filter in 'Entdecken' testen.",
-                                    "Standorterkennung prüfen."
+                                    "Erstelle einen Auftrag (Hilfegesuch) mit Bildern.",
+                                    "Nutze die Karte um Aufträge in der Nähe zu finden.",
+                                    "Filtere nach Kategorien (z.B. Garten, Technik).",
+                                    "Ändere Status (Beendet, Abgebrochen)."
                                 ]
                             },
                             {
                                 id: 4,
-                                title: "4. Der Prozess (Haupt-Feature!) ⭐",
+                                title: "4. Der Ablauf (Das Herzstück!) ⭐",
                                 icon: Star,
                                 tasks: [
-                                    "Nutze einen zweiten Account/Partner.",
-                                    "Anfrage stellen, Akzeptieren/Ablehnen.",
-                                    "Zahlung mit Testdaten simulieren.",
-                                    "Chatnachrichten prüfen."
+                                    "Interagiere mit anderen Testern (Anfragen/Chats).",
+                                    "Akzeptiere eine Hilfe-Anfrage.",
+                                    "Simuliere die Bezahlung mit Testdaten.",
+                                    "Gib eine Bewertung ab nach dem Kontakt."
                                 ]
                             },
                             {
