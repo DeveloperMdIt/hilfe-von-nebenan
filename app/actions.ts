@@ -1313,64 +1313,62 @@ export async function toggleTaskActive(taskId: string, isActive: boolean) {
     revalidatePath('/tasks');
 }
 
-// Map Radius Feature
-export async function getTasksInRadius(centerZip: string, radiusKm: number = 25) {
-    noStore();
+
+export async function getTasksInRadius(userZip: string, radiusKm: number) {
+    if (!userZip || !radiusKm) return { success: false, error: 'Invalid parameters' };
+
     try {
-        // 1. Get coordinates of the center ZIP
-        const centerCoords = await db.select().from(zipCoordinates).where(eq(zipCoordinates.zipCode, centerZip));
-        if (!centerCoords.length) {
-            return { error: 'PLZ nicht gefunden' };
-        }
-        const { latitude: lat1, longitude: lon1 } = centerCoords[0];
+        // 1. Get coordinates for the user's ZIP (center)
+        const [center] = await db.select({
+            lat: zipCoordinates.latitude,
+            lng: zipCoordinates.longitude
+        })
+            .from(zipCoordinates)
+            .where(eq(zipCoordinates.zipCode, userZip));
 
-        const earthRadiusKm = 6371;
+        if (!center) return { success: false, error: 'ZIP coordinates not found' };
 
-        // Use raw SQL for distance calculation
-        const result = await db.execute(sql`
-            SELECT 
-                t.*, 
-                u.zip_code, 
-                zc.latitude, 
-                zc.longitude,
-                (
-                    ${earthRadiusKm} * acos(
-                        cos(radians(${lat1})) * cos(radians(zc.latitude)) * cos(radians(zc.longitude) - radians(${lon1})) + 
-                        sin(radians(${lat1})) * sin(radians(zc.latitude))
-                    )
-                ) AS distance
-            FROM tasks t
-            JOIN users u ON t.customer_id = u.id
-            JOIN zip_coordinates zc ON u.zip_code = zc.zip_code
-            WHERE t.status = 'open' 
-            AND t.is_active = true
-            AND t.moderation_status = 'approved'
-            AND (
-                ${earthRadiusKm} * acos(
-                    cos(radians(${lat1})) * cos(radians(zc.latitude)) * cos(radians(zc.longitude) - radians(${lon1})) + 
-                    sin(radians(${lat1})) * sin(radians(zc.latitude))
+        // 2. Query tasks with distance calculation
+        // Haversine formula in SQL
+        const distanceSql = sql<number>`
+            (6371 * acos(
+                cos(radians(${center.lat})) * cos(radians(${zipCoordinates.latitude})) *
+                cos(radians(${zipCoordinates.longitude}) - radians(${center.lng})) +
+                sin(radians(${center.lat})) * sin(radians(${zipCoordinates.latitude}))
+            ))
+        `;
+
+        const tasksWithDistance = await db
+            .select({
+                id: tasks.id,
+                title: tasks.title,
+                description: tasks.description,
+                priceCents: tasks.priceCents,
+                latitude: zipCoordinates.latitude,
+                longitude: zipCoordinates.longitude,
+                zipCode: users.zipCode,
+                distance: distanceSql,
+            })
+            .from(tasks)
+            .innerJoin(users, eq(tasks.customerId, users.id))
+            .innerJoin(zipCoordinates, eq(users.zipCode, zipCoordinates.zipCode))
+            .where(
+                and(
+                    eq(tasks.isActive, true),
+                    eq(tasks.moderationStatus, 'approved'),
+                    lte(distanceSql, radiusKm) // Filter by radius at DB level for efficiency
                 )
-            ) <= ${radiusKm}
-            ORDER BY distance ASC
-            LIMIT 100;
-        `);
+            )
+            .orderBy(distanceSql); // Show closest first
 
-        // Map raw result to friendly object
-        const tasksWithDistance = result.map((row: any) => ({
-            id: row.id,
-            title: row.title,
-            description: row.description,
-            priceCents: row.price_cents,
-            zipCode: row.zip_code,
-            latitude: row.latitude,
-            longitude: row.longitude,
-            distance: row.distance
-        }));
-
-        return { success: true, tasks: tasksWithDistance, center: { lat: lat1, lng: lon1 } };
+        return {
+            success: true,
+            tasks: tasksWithDistance,
+            center: center
+        };
 
     } catch (error) {
         console.error('Error fetching tasks in radius:', error);
-        return { error: 'Fehler beim Laden der Karte.' };
+        return { success: false, error: 'Failed to fetch tasks' };
     }
 }

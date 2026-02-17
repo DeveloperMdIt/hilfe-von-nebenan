@@ -23,7 +23,7 @@ interface TaskMarker {
     priceCents: number;
     latitude: number;
     longitude: number;
-    zipCode: string;
+    zipCode: string | null;
     distance?: number;
 }
 
