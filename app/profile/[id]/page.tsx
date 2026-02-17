@@ -4,6 +4,7 @@ import { eq, and } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { Crown, CheckCircle2, Clock, MapPin, Star, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ReportButton } from '@/components/utils/ReportButton';
 
 export default async function PublicProfilePage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -72,6 +73,10 @@ export default async function PublicProfilePage(props: { params: Promise<{ id: s
                                     <p className="text-xs text-amber-900/70 dark:text-amber-100/60 leading-relaxed italic">
                                         {user.bio || 'Dieser Nutzer hat noch keine Beschreibung hinzugefügt.'}
                                     </p>
+                                </div>
+
+                                <div className="pt-4 flex justify-center border-t border-gray-50 dark:border-zinc-800">
+                                    <ReportButton targetId={user.id} type="user" />
                                 </div>
                             </div>
                         </div>

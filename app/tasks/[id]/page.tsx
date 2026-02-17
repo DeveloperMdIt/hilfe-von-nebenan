@@ -1,6 +1,6 @@
 import { db } from '../../../lib/db';
-import { tasks, users, reviews } from '../../../lib/schema';
-import { eq, and } from 'drizzle-orm';
+import { tasks, users, reviews, messages } from '../../../lib/schema';
+import { eq, and, or } from 'drizzle-orm';
 import { MapPin, Clock, Crown, Star, ArrowLeft, CheckCircle2, MessageSquare, CreditCard, Pencil, Trash2, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
@@ -8,6 +8,7 @@ import { confirmTaskCompletion, submitReview } from '../../actions';
 import { DeleteTaskButton } from "@/components/tasks/DeleteTaskButton";
 import { formatName } from '../../../lib/utils';
 import { getCategoryLabel } from '@/lib/constants';
+import { ReportButton } from '@/components/utils/ReportButton';
 
 export default async function TaskDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -66,6 +67,34 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
         .from(reviews)
         .where(eq(reviews.taskId, taskId));
 
+    // Decoupled Review Logic: Check if current user has contacted the target
+    let canReview = false;
+    let targetId = '';
+    let targetType: 'seeker' | 'helper' = 'helper';
+
+    if (currentUserId && currentUserId !== task.customerId) {
+        // I am a potential helper/contact. I want to rate the seeker.
+        targetId = task.customerId!;
+        targetType = 'seeker';
+
+        const contactResult = await db.select().from(messages).where(
+            and(
+                eq(messages.taskId, taskId),
+                or(
+                    and(eq(messages.senderId, currentUserId as string), eq(messages.receiverId, task.customerId as string)),
+                    and(eq(messages.senderId, task.customerId as string), eq(messages.receiverId, currentUserId as string))
+                )
+            )
+        ).limit(1);
+
+        canReview = contactResult.length > 0 || task.helperId === currentUserId || task.status === 'closed';
+    } else if (currentUserId && currentUserId === task.customerId && task.helperId) {
+        // I am the seeker. I want to rate the helper.
+        targetId = task.helperId;
+        targetType = 'helper';
+        canReview = true; // Seeker can always rate their helper if assigned
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 font-[family-name:var(--font-geist-sans)]">
             <div className="max-w-4xl mx-auto px-4 py-12">
@@ -94,7 +123,7 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                 {task.title}
                             </h1>
 
-                            <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
+                            <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 leading-relaxed mb-8 whitespace-pre-wrap">
                                 {task.description}
                             </div>
 
@@ -112,74 +141,73 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                     </span>
                                 </div>
                             </div>
+
+                            <div className="mt-8 flex justify-end">
+                                <ReportButton targetId={task.id} type="task" />
+                            </div>
                         </section>
 
                         {/* Rating Section */}
-                        <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
-                            <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
-                                <Star className="text-amber-500 fill-amber-500" size={24} />
-                                Bewertung abgeben
-                            </h2>
+                        {canReview && targetId && (
+                            <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
+                                <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
+                                    <Star className="text-amber-500 fill-amber-500" size={24} />
+                                    Bewertung abgeben
+                                </h2>
 
-                            {taskReviews.length > 0 ? (
-                                <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-6 border border-gray-100 dark:border-zinc-800">
-                                    <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bereits bewertet:</p>
-                                    {taskReviews.map((rev) => (
-                                        <div key={rev.id} className="text-sm text-gray-600 dark:text-gray-400">
-                                            <div className="flex items-center gap-1 text-amber-500 mb-1">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={14} className={i < rev.rating ? 'fill-current' : ''} />
-                                                ))}
-                                            </div>
-                                            <p className="italic">"{rev.comment}"</p>
+                                {taskReviews.some(r => r.reviewerId === currentUserId) ? (
+                                    <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800 text-center">
+                                        <p className="text-sm font-bold text-green-700 dark:text-green-300 flex items-center justify-center gap-2">
+                                            <CheckCircle2 size={16} />
+                                            Du hast diesen Auftrag bereits bewertet.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <form action={submitReview} className="space-y-4">
+                                        <input type="hidden" name="taskId" value={taskId} />
+                                        <input type="hidden" name="revieweeId" value={targetId} />
+                                        <input type="hidden" name="type" value={targetType} />
+
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Wie zufrieden warst du?</label>
+                                            <select name="rating" className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none font-bold">
+                                                <option value="5">⭐⭐⭐⭐⭐ Hervorragend</option>
+                                                <option value="4">⭐⭐⭐⭐ Sehr gut</option>
+                                                <option value="3">⭐⭐⭐ Befriedigend</option>
+                                                <option value="2">⭐⭐ Ausreichend</option>
+                                                <option value="1">⭐ Mangelhaft</option>
+                                            </select>
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <form action={submitReview} className="space-y-4">
-                                    <input type="hidden" name="taskId" value={taskId} />
-                                    <input type="hidden" name="revieweeId" value={requester?.id || ''} />
-                                    <input type="hidden" name="type" value="helper" />
 
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Wie zufrieden warst du?</label>
-                                        <select name="rating" className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-amber-500">
-                                            <option value="5">⭐⭐⭐⭐⭐ Hervorragend</option>
-                                            <option value="4">⭐⭐⭐⭐ Sehr gut</option>
-                                            <option value="3">⭐⭐⭐ Befriedigend</option>
-                                            <option value="2">⭐⭐ Ausreichend</option>
-                                            <option value="1">⭐ Mangelhaft</option>
-                                        </select>
-                                    </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Kommentar</label>
+                                            <textarea
+                                                name="comment"
+                                                rows={3}
+                                                placeholder="Beschreibe deine Erfahrung..."
+                                                className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-xl p-4 focus:ring-2 focus:ring-amber-500 outline-none"
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Kommentar</label>
-                                        <textarea
-                                            name="comment"
-                                            rows={3}
-                                            placeholder="Beschreibe deine Erfahrung..."
-                                            className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-xl p-4 focus:ring-2 focus:ring-amber-500"
-                                        />
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-amber-900/20"
-                                    >
-                                        Bewertung abschicken
-                                    </button>
-                                </form>
-                            )}
-                        </section>
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-amber-600 hover:bg-amber-500 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-amber-900/20"
+                                        >
+                                            Bewertung abschicken
+                                        </button>
+                                    </form>
+                                )}
+                            </section>
+                        )}
                     </div>
 
                     {/* Sidebar: Requester Info */}
                     <div className="space-y-6">
                         <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 shadow-sm border border-gray-100 dark:border-zinc-800 text-center">
                             <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full mx-auto mb-4 flex items-center justify-center text-amber-600">
-                                <Link href="#" className="font-black text-2xl uppercase">
+                                <span className="font-black text-2xl uppercase">
                                     {requester?.fullName?.charAt(0) || '?'}
-                                </Link>
+                                </span>
                             </div>
 
                             <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 flex items-center justify-center gap-2">
@@ -274,7 +302,7 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
 
                                 {/* Management Actions for Owner/Admin */}
                                 {(isOwner || isAdmin) && (
-                                    <div className="pt-6 border-t border-gray-100 dark:border-zinc-800 space-y-3">
+                                    <div className="pt-6 border-t border-gray-100 dark:border-zinc-800 space-y-3 text-left">
                                         <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
                                             <span>Verwaltung</span>
                                             {isOwner ? <span className="text-amber-600">Eigentümer</span> : <span className="text-red-600">Administrator</span>}
@@ -303,10 +331,10 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
                                     </div>
                                 )}
 
-                                <div className="pt-4 border-t border-gray-100 dark:border-zinc-800">
+                                <div className="pt-4 border-t border-gray-100 dark:border-zinc-800 border-dashed">
                                     <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
                                         <span>Profil-Status</span>
-                                        <Link href="/profile" className="text-amber-600 hover:underline">Zum Profil</Link>
+                                        <Link href={`/profile/${requester?.id}`} className="text-amber-600 hover:underline">Zum Profil</Link>
                                     </div>
                                     <div className="w-full h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-green-500 w-[90%]" />

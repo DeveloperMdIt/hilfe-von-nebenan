@@ -223,6 +223,39 @@ export default async function EditUserPage(props: { params: Promise<{ id: string
                                         </label>
                                     </div>
                                 </div>
+
+                                {/* Beta Tester Section */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                                    <div className={`flex items-center gap-4 p-6 rounded-3xl border transition-all ${user.isBetaTester ? 'bg-purple-50/50 border-purple-100 dark:bg-purple-900/10 dark:border-purple-900/20' : 'bg-gray-50/50 border-gray-100 dark:bg-zinc-800/20 dark:border-zinc-800'}`}>
+                                        <input
+                                            type="checkbox"
+                                            id="isBetaTester"
+                                            name="isBetaTester"
+                                            defaultChecked={user.isBetaTester || false}
+                                            className="h-7 w-7 rounded-xl border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                                        />
+                                        <label htmlFor="isBetaTester" className="cursor-pointer">
+                                            <span className="text-sm font-black text-gray-900 dark:text-white block">Beta-Tester Status</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-gray-400">Spezialkonditionen aktiv</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Beta-Rabattsatz (%)</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                name="betaDiscountRate"
+                                                min="0"
+                                                max="100"
+                                                defaultValue={user.betaDiscountRate || 0}
+                                                className="block w-full rounded-2xl border-gray-200 dark:border-zinc-800 dark:bg-zinc-950 p-4 border transition-all hover:border-gray-300 shadow-sm sm:text-sm pr-10"
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 italic px-1">Rabatt auf die Standard-Provision (nach der Beta-Phase).</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

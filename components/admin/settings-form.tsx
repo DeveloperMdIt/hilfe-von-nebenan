@@ -151,6 +151,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                             { name: 'moduleChat', title: 'Chat-System', desc: 'Direktnachrichten', key: 'module_chat' },
                             { name: 'moduleReviews', title: 'Bewertungen', desc: 'Gegenseitiges Feedback', key: 'module_reviews' },
                             { name: 'moduleSubscriptions', title: 'Abo-Modelle', desc: 'Premium-Mitgliedschaften', key: 'module_subscriptions' },
+                            { name: 'isBetaPhase', title: 'Beta-Phase', desc: '0% Gebühren für Beta-Tester', key: 'is_beta_phase' },
                         ].map((m) => (
                             <div key={m.name} className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800/50 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
                                 <div>

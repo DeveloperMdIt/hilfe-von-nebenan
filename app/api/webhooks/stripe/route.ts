@@ -39,12 +39,26 @@ export async function POST(req: Request) {
                 const [customer] = await db.select().from(users).where(eq(users.id, task.customerId!));
                 const [helper] = await db.select().from(users).where(eq(users.id, task.helperId!));
 
+                // Beta Phase & Discount Logic
+                const betaPhaseResult = await db.select().from(settings).where(eq(settings.key, 'is_beta_phase'));
+                const isBetaPhase = betaPhaseResult[0]?.value === 'true';
+
                 // Calculate commission and payout based on subscription plan
                 // Default to 15% if not found
                 let commissionRate = 15;
                 if (helper?.planId) {
                     const [plan] = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, helper.planId));
                     if (plan) commissionRate = plan.commissionRate;
+                }
+
+                // Apply Beta Logic
+                if (helper?.isBetaTester) {
+                    if (isBetaPhase) {
+                        commissionRate = 0; // Everything free for beta testers during beta phase
+                    } else if (helper.betaDiscountRate) {
+                        // Permanent discount after beta phase (e.g. 20% discount on 15% rate = 12%)
+                        commissionRate = Math.round(commissionRate * (1 - helper.betaDiscountRate / 100));
+                    }
                 }
 
                 const commissionCents = Math.round((task.priceCents * commissionRate) / 100);

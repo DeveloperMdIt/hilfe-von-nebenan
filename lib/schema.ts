@@ -43,6 +43,8 @@ export const users = pgTable('users', {
     referralCode: varchar('referral_code', { length: 20 }).unique(),
     referredBy: uuid('referred_by'), // Self-reference defined below to avoid circular dependency issues if possible, or just use raw uuid
     creditsCents: integer('credits_cents').default(0),
+    isBetaTester: boolean('is_beta_tester').default(false),
+    betaDiscountRate: integer('beta_discount_rate'), // e.g. 20 for 20% discount on commission
 });
 
 export const archivedConversations = pgTable('archived_conversations', {
@@ -93,6 +95,8 @@ export const reports = pgTable('reports', {
     targetUserId: uuid('target_user_id').references(() => users.id),
     reason: text('reason').notNull(),
     status: varchar('status', { length: 20 }).default('pending'), // 'pending', 'resolved'
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    adminNotes: text('admin_notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

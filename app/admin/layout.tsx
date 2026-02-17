@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, ListTodo, Settings, Home, CreditCard, Mail, Star, FileText, ShieldAlert } from 'lucide-react';
 import { MobileSidebar } from '../../components/admin/mobile-sidebar';
 import { AdminHeader } from '../../components/admin/header';
 import { cookies } from 'next/headers';
@@ -38,6 +38,7 @@ export default async function AdminLayout({
         { name: 'Email Vorlagen', href: '/admin/email-templates', icon: Mail },
         { name: 'Abo-Modelle', href: '/admin/plans', icon: CreditCard },
         { name: 'Tags & Kategorien', href: '/admin/tags', icon: ListTodo },
+        { name: 'Moderation', href: '/admin/reports', icon: ShieldAlert },
         { name: 'Steuermeldung (PStTG)', href: '/admin/tax-reporting', icon: FileText },
         { name: 'Einstellungen', href: '/admin/settings', icon: Settings },
     ];

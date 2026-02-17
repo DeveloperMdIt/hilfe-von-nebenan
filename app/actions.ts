@@ -531,6 +531,8 @@ export async function updateUser(formData: FormData) {
     const bic = formData.get('bic') as string;
     const accountHolderName = formData.get('accountHolderName') as string;
     const zipCode = formData.get('zipCode') as string;
+    const isBetaTester = formData.get('isBetaTester') === 'on';
+    const betaDiscountRate = formData.get('betaDiscountRate') ? parseInt(formData.get('betaDiscountRate') as string) : null;
 
     if (!id || !email) return;
 
@@ -549,6 +551,8 @@ export async function updateUser(formData: FormData) {
         bic,
         accountHolderName,
         zipCode,
+        isBetaTester,
+        betaDiscountRate,
     };
 
     if (dateOfBirth) {
@@ -1347,13 +1351,24 @@ export async function approveTask(taskId: string) {
 
 export async function rejectTask(taskId: string) {
     await db.update(tasks)
-        .set({ moderationStatus: 'rejected', isActive: false })
+        .set({ moderationStatus: 'rejected' })
         .where(eq(tasks.id, taskId));
     revalidatePath('/admin/tasks');
-    revalidatePath('/tasks');
 }
 
+export async function resolveReport(reportId: string, adminNotes: string) {
+    await db.update(reportsTable).set({
+        status: 'resolved',
+        resolvedAt: new Date(),
+        adminNotes,
+    }).where(eq(reportsTable.id, reportId));
+    revalidatePath('/admin/reports');
+}
 
+export async function rejectReport(reportId: string) {
+    await db.delete(reportsTable).where(eq(reportsTable.id, reportId));
+    revalidatePath('/admin/reports');
+}
 
 export async function getTasksInRadius(userZip: string, radiusKm: number) {
     if (!userZip || !radiusKm) return { success: false, error: 'Invalid parameters' };
