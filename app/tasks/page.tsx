@@ -132,7 +132,7 @@ COALESCE((6371 * acos(
         <div className="min-h-screen bg-gray-50 dark:bg-black font-[family-name:var(--font-geist-sans)]">
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8 mb-12">
                     {/* Sidebar */}
                     <div className="lg:col-span-1 lg:h-[600px]">
                         <FilterSidebar className="h-full" />
@@ -150,46 +150,50 @@ COALESCE((6371 * acos(
                                 radius={parseInt(radius === 'all' ? '51' : radius)}
                             />
                         </div>
+                    </div>
+                </div>
 
-                        {/* List */}
-                        <div>
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    Angebote in der Nähe
-                                    <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{nearbyTasks.length}</span>
-                                </h3>
-                            </div>
+                {/* Full-width Results */}
+                <div className="space-y-12">
+                    {/* Nearby Section */}
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                                Angebote in der Nähe
+                                <span className="text-sm font-bold border-2 border-amber-100 dark:border-zinc-800 text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-zinc-800/50 px-3 py-1 rounded-2xl">{nearbyTasks.length}</span>
+                            </h3>
+                        </div>
 
-                            <div className="grid gap-6 md:grid-cols-2">
-                                {nearbyTasks.map((task) => (
-                                    <TaskCard key={task.id} task={task} />
-                                ))}
+                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {nearbyTasks.map((task) => (
+                                <TaskCard key={task.id} task={task} />
+                            ))}
 
-                                {nearbyTasks.length === 0 && (
-                                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-300">
-                                        <p className="text-lg font-medium">Keine Ergebnisse direkt in der Nähe</p>
-                                        <p className="text-sm mt-1">Versuche den Umkreis zu erhöhen oder schau dir die Angebote weiter unten an.</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {furtherTasks.length > 0 && (
-                                <div className="mt-16">
-                                    <div className="flex justify-between items-center mb-6 border-t border-gray-100 dark:border-zinc-800 pt-8">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                            Etwas weiter weg
-                                            <span className="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-full">{furtherTasks.length}</span>
-                                        </h3>
-                                    </div>
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        {furtherTasks.map((task) => (
-                                            <TaskCard key={task.id} task={task} />
-                                        ))}
-                                    </div>
+                            {nearbyTasks.length === 0 && (
+                                <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500 bg-white dark:bg-zinc-900 rounded-[2.5rem] border-4 border-dashed border-gray-100 dark:border-zinc-800">
+                                    <p className="text-xl font-black text-gray-400 dark:text-zinc-600">Keine Ergebnisse direkt in der Nähe</p>
+                                    <p className="text-sm mt-2 text-gray-400">Versuche den Umkreis zu erhöhen oder schau dir die Angebote weiter unten an.</p>
                                 </div>
                             )}
                         </div>
                     </div>
+
+                    {/* Further Away Section */}
+                    {furtherTasks.length > 0 && (
+                        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                                    Etwas weiter weg
+                                    <span className="text-sm font-bold border-2 border-gray-100 dark:border-zinc-800 text-gray-500 px-3 py-1 rounded-2xl">{furtherTasks.length}</span>
+                                </h3>
+                            </div>
+                            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {furtherTasks.map((task) => (
+                                    <TaskCard key={task.id} task={task} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
