@@ -129,7 +129,7 @@ COALESCE((6371 * acos(
                 {view === 'map' ? (
                     <div className="space-y-6">
                         <TaskMapClient
-                            tasks={mapData}
+                            initialTasks={mapData}
                             center={center ? [center.latitude, center.longitude] : undefined}
                             zoom={radius === 'all' ? 6 : radius === '50' ? 9 : radius === '25' ? 10 : radius === '10' ? 11 : 12}
                             userZip={userZip}

@@ -42,8 +42,8 @@ function ChangeView({ center, zoom }: { center: [number, number], zoom: number }
     return null;
 }
 
-export default function TaskMap({ initialTasks, center = [51.1657, 10.4515], zoom = 6, userZip }: TaskMapProps) {
-    const [tasks, setTasks] = useState<TaskMarker[]>(initialTasks);
+export default function TaskMap({ initialTasks = [], center = [51.1657, 10.4515], zoom = 6, userZip }: TaskMapProps) {
+    const [tasks, setTasks] = useState<TaskMarker[]>(initialTasks || []);
     // Only enable radius search if we have a userZip (activatable area)
     const [radius, setRadius] = useState<number>(userZip ? 25 : 0);
     const [mapCenter, setMapCenter] = useState<[number, number]>(center);
