@@ -5,7 +5,11 @@ export const TASK_CATEGORIES = [
     { slug: 'diy', name: 'Handwerk' },
     { slug: 'garden', name: 'Garten' },
     { slug: 'transport', name: 'Transport' },
-    { slug: 'care', name: 'Pflege' },
+    { slug: 'care', name: 'Pflege & Begleitung' },
+    { slug: 'tech', name: 'PC & Technik-Hilfe' },
+    { slug: 'household', name: 'Haushalt & Reinigung' },
+    { slug: 'errands', name: 'Botengänge' },
+    { slug: 'social', name: 'Freizeit & Gesellschaft' },
 ];
 
 export const CATEGORY_LABELS: Record<string, string> = TASK_CATEGORIES.reduce((acc, cat) => {

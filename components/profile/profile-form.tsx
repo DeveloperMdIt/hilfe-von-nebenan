@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useActionState, useState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateUserProfile } from '@/app/actions';
 import TagSelector from './tag-selector';
@@ -35,15 +34,16 @@ export default function ProfileForm({
 }) {
     const [state, formAction] = useActionState(updateUserProfile, null);
     const [showSuccess, setShowSuccess] = useState(false);
+    const successRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (state?.success) {
             setShowSuccess(true);
 
-            // Comprehensive scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
-            document.body.scrollTo({ top: 0, behavior: 'smooth' });
+            // Wait for next tick so the element is rendered if it wasn't before
+            setTimeout(() => {
+                successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
 
             const timer = setTimeout(() => setShowSuccess(false), 5000);
             return () => clearTimeout(timer);
@@ -101,7 +101,7 @@ export default function ProfileForm({
 
                 <div className="px-4 py-6 sm:p-8">
                     {showSuccess && (
-                        <div className="mb-6 flex items-center gap-2 p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-2xl border-2 border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-4">
+                        <div ref={successRef} className="mb-6 flex items-center gap-2 p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-2xl border-2 border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-4">
                             <CheckCircle2 className="h-6 w-6" />
                             <div>
                                 <p className="text-lg font-black">Erfolgreich gespeichert!</p>
