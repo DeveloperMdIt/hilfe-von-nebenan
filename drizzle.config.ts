@@ -9,4 +9,5 @@ export default defineConfig({
     dbCredentials: {
         url: process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5177/hilfevonnebenan',
     },
+    tablesFilter: ['!spatial_ref_sys', '!geography_columns', '!geometry_columns'],
 });
