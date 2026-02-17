@@ -8,21 +8,15 @@ export function PwaInstallBanner() {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        const checkDismissed = () => {
-            const dismissed = localStorage.getItem('pwa_banner_dismissed') === 'true';
-            console.log('[DEBUG] PWA Banner checkDismissed:', dismissed);
-            return dismissed;
-        };
+        const checkDismissed = () => localStorage.getItem('pwa_banner_dismissed') === 'true';
 
         // Initial check
         if (checkDismissed()) {
-            console.log('[DEBUG] PWA Banner: Already dismissed, hiding.');
             setIsVisible(false);
             return;
         }
 
         const handler = (e: any) => {
-            console.log('[DEBUG] PWA Banner: beforeinstallprompt event fired.');
             // Check again inside handler in case it was dismissed in another tab
             if (checkDismissed()) return;
 
@@ -30,7 +24,6 @@ export function PwaInstallBanner() {
             e.preventDefault();
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e);
-            console.log('[DEBUG] PWA Banner: Setting visible to true.');
             setIsVisible(true);
         };
 
@@ -45,30 +38,22 @@ export function PwaInstallBanner() {
     }, []);
 
     const handleInstallClick = async () => {
-        console.log('[DEBUG] PWA Banner: handleInstallClick triggered.');
-        if (!deferredPrompt) {
-            console.log('[DEBUG] PWA Banner: No deferredPrompt available.');
-            return;
-        }
+        if (!deferredPrompt) return;
 
         // Show the prompt
         deferredPrompt.prompt();
 
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`[DEBUG] PWA Banner: User response to install prompt: ${outcome}`);
 
         // We've used the prompt, and can't use it again, throw it away
         setDeferredPrompt(null);
         setIsVisible(false);
-        console.log('[DEBUG] PWA Banner: Setting pwa_banner_dismissed to true (after install).');
         localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
     const handleDismiss = () => {
-        console.log('[DEBUG] PWA Banner: handleDismiss triggered.');
         setIsVisible(false);
-        console.log('[DEBUG] PWA Banner: Setting pwa_banner_dismissed to true (after dismiss).');
         localStorage.setItem('pwa_banner_dismissed', 'true');
     };
 
