@@ -81,20 +81,20 @@ export default async function AdminTasksPage() {
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end items-center gap-2">
                                         {task.moderationStatus !== 'approved' && (
-                                            <form action={approveTask.bind(null, task.id)}>
+                                            <form action={async () => { await approveTask(task.id); }}>
                                                 <button type="submit" className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Freigeben">
                                                     <Check size={18} />
                                                 </button>
                                             </form>
                                         )}
                                         {task.moderationStatus !== 'rejected' && (
-                                            <form action={rejectTask.bind(null, task.id)}>
+                                            <form action={async () => { await rejectTask(task.id); }}>
                                                 <button type="submit" className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Ablehnen">
                                                     <X size={18} />
                                                 </button>
                                             </form>
                                         )}
-                                        <form action={toggleTaskActive.bind(null, task.id, !task.isActive)}>
+                                        <form action={async () => { await toggleTaskActive(task.id); }}>
                                             <button type="submit" className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg transition-colors" title={task.isActive ? "Deaktivieren" : "Aktivieren"}>
                                                 {task.isActive ? <EyeOff size={18} /> : <Eye size={18} />}
                                             </button>
@@ -147,13 +147,13 @@ export default async function AdminTasksPage() {
                             <div className="w-px h-8 bg-gray-100 dark:bg-zinc-800"></div>
                             <div className="flex justify-end gap-2 flex-1">
                                 {task.moderationStatus !== 'approved' && (
-                                    <form action={approveTask.bind(null, task.id)}>
+                                    <form action={async () => { await approveTask(task.id); }}>
                                         <button type="submit" className="p-2 bg-green-50 text-green-600 rounded-lg" title="Freigeben">
                                             <Check size={18} />
                                         </button>
                                     </form>
                                 )}
-                                <form action={toggleTaskActive.bind(null, task.id, !task.isActive)}>
+                                <form action={async () => { await toggleTaskActive(task.id); }}>
                                     <button type="submit" className="p-2 bg-gray-50 text-gray-500 rounded-lg">
                                         {task.isActive ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>

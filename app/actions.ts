@@ -109,8 +109,14 @@ export async function deleteTask(formData: FormData) {
     return { success: true };
 }
 
-export async function toggleTaskActive(formData: FormData) {
-    const id = formData.get('id') as string;
+export async function toggleTaskActive(idOrFormData: string | FormData) {
+    let id: string;
+    if (typeof idOrFormData === 'string') {
+        id = idOrFormData;
+    } else {
+        id = idOrFormData.get('id') as string;
+    }
+
     if (!id) return { error: 'Keine ID angegeben.' };
 
     const cookieStore = await cookies();
@@ -118,10 +124,15 @@ export async function toggleTaskActive(formData: FormData) {
 
     if (!userId) return { error: 'Nicht eingeloggt.' };
 
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
     const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
 
     if (!task) return { error: 'Auftrag nicht gefunden.' };
-    if (task.customerId !== userId) return { error: 'Nicht berechtigt.' };
+
+    // Allow if owner OR admin
+    if (task.customerId !== userId && user?.role !== 'admin') {
+        return { error: 'Nicht berechtigt.' };
+    }
 
     await db.update(tasks).set({ isActive: !task.isActive }).where(eq(tasks.id, id));
 
