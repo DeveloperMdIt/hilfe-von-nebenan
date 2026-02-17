@@ -8,15 +8,21 @@ export function PwaInstallBanner() {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        const checkDismissed = () => localStorage.getItem('pwa_banner_dismissed') === 'true';
+        const checkDismissed = () => {
+            const dismissed = localStorage.getItem('pwa_banner_dismissed') === 'true';
+            console.log('[DEBUG] PWA Banner checkDismissed:', dismissed);
+            return dismissed;
+        };
 
         // Initial check
         if (checkDismissed()) {
+            console.log('[DEBUG] PWA Banner: Already dismissed, hiding.');
             setIsVisible(false);
             return;
         }
 
         const handler = (e: any) => {
+            console.log('[DEBUG] PWA Banner: beforeinstallprompt event fired.');
             // Check again inside handler in case it was dismissed in another tab
             if (checkDismissed()) return;
 
@@ -24,6 +30,7 @@ export function PwaInstallBanner() {
             e.preventDefault();
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e);
+            console.log('[DEBUG] PWA Banner: Setting visible to true.');
             setIsVisible(true);
         };
 
