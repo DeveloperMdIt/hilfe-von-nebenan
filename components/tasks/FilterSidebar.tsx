@@ -42,10 +42,10 @@ export function FilterSidebar({ className }: { className?: string }) {
     };
 
     return (
-        <div className={`bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 space-y-8 shadow-sm ${className}`}>
+        <div className={`bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 space-y-6 shadow-sm flex flex-col max-h-full ${className}`}>
 
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center shrink-0">
                 <h3 className="font-bold text-lg">Filter</h3>
                 {(currentSearch || currentCategory || currentRadius !== 'all') && (
                     <button
@@ -58,8 +58,8 @@ export function FilterSidebar({ className }: { className?: string }) {
             </div>
 
             {/* Search */}
-            <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Suche</label>
+            <div className="space-y-2 shrink-0">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-400">Suche</label>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input
@@ -78,13 +78,13 @@ export function FilterSidebar({ className }: { className?: string }) {
             </div>
 
             {/* Radius Slider */}
-            <div className="space-y-4">
+            <div className="space-y-3 shrink-0">
                 <div className="flex justify-between items-center">
-                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <MapPin size={14} className="text-amber-600" />
+                    <label className="text-xs font-black uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                        <MapPin size={12} className="text-amber-600" />
                         Umkreis
                     </label>
-                    <span className="text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-2 py-1 rounded-full">
+                    <span className="text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-2 py-0.5 rounded-full">
                         {radiusValue > 50 ? 'Alle' : `${radiusValue} km`}
                     </span>
                 </div>
@@ -95,22 +95,19 @@ export function FilterSidebar({ className }: { className?: string }) {
                     step="1"
                     value={radiusValue}
                     onChange={(e) => setRadiusValue(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
                 />
-                <div className="flex justify-between text-[10px] text-gray-400">
-                    <span>1 km</span>
-                    <span>∞</span>
-                </div>
             </div>
 
             {/* Categories */}
-            <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Kategorie</label>
-                    <span className="text-[10px] text-gray-400 font-medium">Mehrfachauswahl möglich</span>
+            <div className="flex flex-col min-h-0 space-y-3">
+                <div className="flex justify-between items-center shrink-0">
+                    <label className="text-xs font-black uppercase tracking-wider text-gray-400">Kategorie</label>
+                    <span className="text-[10px] text-gray-400 font-medium italic">Multi-Select</span>
                 </div>
-                <div className="space-y-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-1.5 custom-scrollbar min-h-0">
+                    <label className="flex items-center gap-3 cursor-pointer group py-0.5">
                         <input
                             type="checkbox"
                             checked={!currentCategory}
@@ -124,7 +121,7 @@ export function FilterSidebar({ className }: { className?: string }) {
                     {TASK_CATEGORIES.map((cat) => {
                         const isSelected = currentCategory?.split(',').includes(cat.slug);
                         return (
-                            <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group">
+                            <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group py-0.5">
                                 <input
                                     type="checkbox"
                                     checked={!!isSelected}
@@ -140,7 +137,7 @@ export function FilterSidebar({ className }: { className?: string }) {
                                     }}
                                     className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                                 />
-                                <span className={`text-sm ${isSelected ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                                <span className={`text-sm ${isSelected ? 'font-bold text-amber-600' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}>
                                     {cat.name}
                                 </span>
                             </label>
