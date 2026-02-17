@@ -33,11 +33,25 @@ interface TaskMapProps {
     radius?: number;
 }
 
-function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
+function ChangeView({ center, zoom, radius }: { center: [number, number], zoom: number, radius: number }) {
     const map = useMap();
     useEffect(() => {
-        map.setView(center, zoom);
-    }, [center, zoom, map]);
+        if (radius > 0 && radius <= 50) {
+            // Calculate bounds for the circle
+            // 1 degree lat ~ 111km
+            const dLat = radius / 111;
+            const dLon = radius / (111 * Math.cos(center[0] * Math.PI / 180));
+
+            const bounds = L.latLngBounds(
+                [center[0] - dLat, center[1] - dLon],
+                [center[0] + dLat, center[1] + dLon]
+            );
+
+            map.fitBounds(bounds, { padding: [20, 20] });
+        } else {
+            map.setView(center, zoom);
+        }
+    }, [center, zoom, radius, map]);
     return null;
 }
 
@@ -83,7 +97,7 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
                 scrollWheelZoom={true}
                 className="h-full w-full"
             >
-                <ChangeView center={center} zoom={zoom} />
+                <ChangeView center={center} zoom={zoom} radius={radius} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
