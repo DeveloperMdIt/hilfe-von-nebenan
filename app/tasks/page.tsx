@@ -113,23 +113,6 @@ COALESCE((6371 * acos(
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-black font-[family-name:var(--font-geist-sans)]">
-            {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-10 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                    <Link href="/" className="text-xl font-bold whitespace-nowrap flex items-center gap-2">
-                        <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">H</div>
-                        Nachbarschafts-Helden
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/tasks/new"
-                            className="inline-flex items-center gap-2 bg-amber-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-amber-700 transition-colors shadow-sm text-sm"
-                        >
-                            <span>+</span> Auftrag erstellen
-                        </Link>
-                    </div>
-                </div>
-            </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">

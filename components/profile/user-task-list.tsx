@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { tasks, reviews } from '@/lib/schema';
 import { eq, or, and, desc } from 'drizzle-orm';
 import { getCategoryLabel } from '@/lib/constants';
+import { Edit2, Trash2, PowerOff, Power } from 'lucide-react';
+import { deleteTask, toggleTaskActive } from '@/app/actions';
 
 export default async function UserTaskList({ userId }: { userId: string }) {
     // 1. Tasks created by the user (as Customer)
@@ -29,11 +31,13 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                         <ul role="list" className="divide-y divide-gray-200 dark:divide-zinc-800">
                             {myRequests.map((task) => (
                                 <li key={task.id}>
-                                    <Link href={`/tasks/${task.id}`} className="block hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                    <div className="block hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                                         <div className="px-4 py-4 sm:px-6">
                                             <div className="flex items-center justify-between">
-                                                <p className="truncate text-sm font-medium text-amber-600 dark:text-amber-500">{task.title}</p>
-                                                <div className="ml-2 flex flex-shrink-0 gap-2">
+                                                <Link href={`/tasks/${task.id}`} className="truncate text-sm font-medium text-amber-600 dark:text-amber-500 hover:underline">
+                                                    {task.title}
+                                                </Link>
+                                                <div className="ml-2 flex flex-shrink-0 gap-2 items-center">
                                                     {task.moderationStatus === 'flagged' && (
                                                         <p className="inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-amber-100 text-amber-800">
                                                             In Prüfung
@@ -50,12 +54,45 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                                                         }`}>
                                                         {task.status === 'open' ? 'Offen' : task.status}
                                                     </p>
+
+                                                    {/* Quick Actions */}
+                                                    <div className="flex items-center gap-1 ml-4 border-l pl-4 dark:border-zinc-800">
+                                                        <Link
+                                                            href={`/tasks/${task.id}/edit`}
+                                                            className="p-1.5 text-gray-400 hover:text-amber-600 transition-colors"
+                                                            title="Bearbeiten"
+                                                        >
+                                                            <Edit2 size={16} />
+                                                        </Link>
+
+                                                        <form action={async (formData) => { await toggleTaskActive(formData); }}>
+                                                            <input type="hidden" name="id" value={task.id} />
+                                                            <button
+                                                                type="submit"
+                                                                className={`p-1.5 transition-colors ${task.isActive ? 'text-gray-400 hover:text-amber-600' : 'text-amber-600 hover:text-amber-700'}`}
+                                                                title={task.isActive ? 'Deaktivieren' : 'Aktivieren'}
+                                                            >
+                                                                {task.isActive ? <PowerOff size={16} /> : <Power size={16} />}
+                                                            </button>
+                                                        </form>
+
+                                                        <form action={async (formData) => { if (confirm('Diesen Auftrag wirklich löschen?')) await deleteTask(formData); }}>
+                                                            <input type="hidden" name="id" value={task.id} />
+                                                            <button
+                                                                type="submit"
+                                                                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                                                title="Löschen"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="mt-2 sm:flex sm:justify-between">
                                                 <div className="sm:flex">
                                                     <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        {task.category}
+                                                        {getCategoryLabel(task.category)}
                                                     </p>
                                                 </div>
                                                 <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400 sm:mt-0">
@@ -65,7 +102,7 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                                                 </div>
                                             </div>
                                         </div>
-                                    </Link>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
@@ -99,7 +136,7 @@ export default async function UserTaskList({ userId }: { userId: string }) {
                                             <div className="mt-2 sm:flex sm:justify-between">
                                                 <div className="sm:flex">
                                                     <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        Preis: {(task.priceCents / 100).toFixed(2)} €
+                                                        {getCategoryLabel(task.category)} • Preis: {(task.priceCents / 100).toFixed(2)} €
                                                     </p>
                                                 </div>
                                             </div>

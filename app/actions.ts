@@ -109,6 +109,28 @@ export async function deleteTask(formData: FormData) {
     return { success: true };
 }
 
+export async function toggleTaskActive(formData: FormData) {
+    const id = formData.get('id') as string;
+    if (!id) return { error: 'Keine ID angegeben.' };
+
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+
+    if (!userId) return { error: 'Nicht eingeloggt.' };
+
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+
+    if (!task) return { error: 'Auftrag nicht gefunden.' };
+    if (task.customerId !== userId) return { error: 'Nicht berechtigt.' };
+
+    await db.update(tasks).set({ isActive: !task.isActive }).where(eq(tasks.id, id));
+
+    revalidatePath('/tasks');
+    revalidatePath('/profile');
+    revalidatePath('/admin/tasks');
+
+    return { success: true };
+}
 
 
 export async function updateTask(formData: FormData) {
