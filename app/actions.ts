@@ -384,7 +384,7 @@ export async function loginUser(prevState: any, formData: FormData) {
         throw e;
     }
 
-    redirect('/');
+    redirect('/tasks');
 }
 
 export async function resendVerificationEmail(email: string) {

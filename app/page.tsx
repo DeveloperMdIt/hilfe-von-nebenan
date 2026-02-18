@@ -6,10 +6,16 @@ import { cookies } from 'next/headers';
 import { db } from '../lib/db';
 import { users } from '../lib/schema';
 import { eq } from 'drizzle-orm';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
   const cookieStore = await cookies();
   const userId = cookieStore.get('userId')?.value;
+
+  if (userId) {
+    redirect('/tasks');
+  }
+
   let userName = '';
 
   if (userId) {
