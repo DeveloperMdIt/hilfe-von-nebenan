@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, MapPin, X } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TASK_CATEGORIES } from '@/lib/constants';
 import { useTransition, useState, useEffect } from 'react';
@@ -9,6 +9,7 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const currentSearch = searchParams.get('search') || '';
     const currentCategory = searchParams.get('category');
@@ -73,41 +74,79 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
                     </div>
                 </div>
 
-                {/* Categories - Horizontal Scroll */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar max-w-full md:max-w-[40%]">
+                {/* Categories Dropdown */}
+                <div className="relative group min-w-[180px]">
                     <button
-                        onClick={() => updateParams({ category: null })}
-                        className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${!currentCategory
-                                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
-                                : 'bg-gray-50 dark:bg-zinc-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700'
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className={`w-full flex items-center justify-between px-5 py-3 rounded-2xl border transition-all duration-300 ${currentCategory
+                            ? 'bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-600/20'
+                            : 'bg-gray-50 dark:bg-zinc-800 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700'
                             }`}
                     >
-                        Alle
+                        <div className="flex flex-col items-start">
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${currentCategory ? 'text-amber-100' : 'text-gray-400'}`}>
+                                Kategorien
+                            </span>
+                            <span className="text-xs font-black uppercase tracking-widest truncate max-w-[120px]">
+                                {currentCategory ? `${currentCategory.split(',').length} Ausgewählt` : 'Alle Anzeigen'}
+                            </span>
+                        </div>
+                        <ChevronDown className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} size={16} />
                     </button>
-                    {TASK_CATEGORIES.map((cat) => {
-                        const isSelected = currentCategory?.split(',').includes(cat.slug);
-                        return (
-                            <button
-                                key={cat.slug}
-                                onClick={() => {
-                                    const current = currentCategory ? currentCategory.split(',') : [];
-                                    let newCategories;
-                                    if (isSelected) {
-                                        newCategories = current.filter(c => c !== cat.slug);
-                                    } else {
-                                        newCategories = [...current, cat.slug];
-                                    }
-                                    updateParams({ category: newCategories.length > 0 ? newCategories.join(',') : null });
-                                }}
-                                className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isSelected
-                                        ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
-                                        : 'bg-gray-50 dark:bg-zinc-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-700'
-                                    }`}
-                            >
-                                {cat.name}
-                            </button>
-                        );
-                    })}
+
+                    {isDropdownOpen && (
+                        <>
+                            <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setIsDropdownOpen(false)}
+                            />
+                            <div className="absolute top-[calc(100%+10px)] left-0 w-64 max-h-80 overflow-y-auto bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-200 no-scrollbar">
+                                <label className="flex items-center gap-3 cursor-pointer group py-2 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={!currentCategory}
+                                        onChange={() => {
+                                            updateParams({ category: null });
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-200 dark:border-zinc-700 rounded"
+                                    />
+                                    <span className={`text-[10px] uppercase tracking-widest font-black transition-colors ${!currentCategory ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                                        Alle anzeigen
+                                    </span>
+                                </label>
+                                <div className="h-px bg-gray-50 dark:bg-zinc-800 my-2 mx-3" />
+                                {TASK_CATEGORIES.map((cat) => {
+                                    const isSelected = currentCategory?.split(',').includes(cat.slug);
+                                    return (
+                                        <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group py-2 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!isSelected}
+                                                onChange={(e) => {
+                                                    const current = currentCategory ? currentCategory.split(',') : [];
+                                                    let newCategories;
+                                                    if (e.target.checked) {
+                                                        newCategories = [...current, cat.slug];
+                                                    } else {
+                                                        newCategories = current.filter(c => c !== cat.slug);
+                                                    }
+                                                    updateParams({ category: newCategories.length > 0 ? newCategories.join(',') : null });
+                                                }}
+                                                className="w-4 h-4 text-amber-600 focus:ring-amber-500 border-gray-200 dark:border-zinc-700 rounded"
+                                            />
+                                            <span
+                                                className={`text-[10px] uppercase tracking-widest font-black transition-colors ${isSelected ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}
+                                                title={cat.name}
+                                            >
+                                                {cat.name}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {isPending && <Loader2 className="animate-spin text-amber-600 shrink-0" size={20} />}
