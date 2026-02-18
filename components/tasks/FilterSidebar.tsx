@@ -119,7 +119,7 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
                                 {TASK_CATEGORIES.map((cat) => {
                                     const isSelected = currentCategory?.split(',').includes(cat.slug);
                                     return (
-                                        <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group py-2 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                                        <label key={cat.slug} title={cat.name} className="flex items-center gap-3 cursor-pointer group py-2 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
                                             <input
                                                 type="checkbox"
                                                 checked={!!isSelected}
@@ -137,7 +137,6 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
                                             />
                                             <span
                                                 className={`text-[10px] uppercase tracking-widest font-black transition-colors ${isSelected ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}
-                                                title={cat.name}
                                             >
                                                 {cat.name}
                                             </span>
@@ -228,7 +227,7 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
                     {TASK_CATEGORIES.map((cat) => {
                         const isSelected = currentCategory?.split(',').includes(cat.slug);
                         return (
-                            <label key={cat.slug} className="flex items-center gap-3 cursor-pointer group py-1">
+                            <label key={cat.slug} title={cat.name} className="flex items-center gap-3 cursor-pointer group py-1">
                                 <input
                                     type="checkbox"
                                     checked={!!isSelected}
@@ -246,7 +245,6 @@ export function FilterSidebar({ className, variant = 'vertical' }: { className?:
                                 />
                                 <span
                                     className={`text-xs uppercase tracking-widest font-black transition-colors ${isSelected ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'} line-clamp-1`}
-                                    title={cat.name}
                                 >
                                     {cat.name}
                                 </span>
