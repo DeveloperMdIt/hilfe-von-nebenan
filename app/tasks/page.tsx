@@ -134,91 +134,96 @@ COALESCE((6371 * acos(
                 {/* View Toolbar */}
                 <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 dark:text-white">Nachbarschafts Feed</h2>
-                        <p className="text-gray-500 text-sm mt-1">Finde aktuelle Hilfeangebote in deiner direkten Umgebung</p>
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Nachbarschafts Feed</h2>
+                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1 opacity-70">Finde Hilfe in deiner direkten Umgebung</p>
                     </div>
                     <ViewToggle />
                 </div>
 
-                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1">
-                        <FilterSidebar className="h-full" />
-                    </div>
-
-                    {/* Main Content */}
-                    <div className="lg:col-span-3 space-y-12">
-
-                        {/* Map View */}
-                        {(view === 'map' || view === 'split') && (
-                            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-1.5 shadow-2xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-zinc-800 h-[500px] lg:h-[600px] relative overflow-hidden group">
-                                <TaskMapClient
-                                    tasks={mapData}
-                                    center={center ? [center.latitude, center.longitude] : undefined}
-                                    zoom={radius === 'all' ? 6 : Math.max(9, Math.min(15, Math.round(14.8 - Math.log2(radiusNum / 1.5))))}
-                                    userZip={userZip}
-                                    radius={parseInt(radius === 'all' ? '51' : radius)}
-                                />
-                                {view === 'split' && (
-                                    <div className="absolute top-6 right-6 z-[400]">
-                                        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/50 dark:border-zinc-700/50 shadow-lg text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                            {mapData.length} Angebote auf der Karte
-                                        </div>
-                                    </div>
-                                )}
+                {/* Top Section (Sidebar + Map or Horizontal Filters) */}
+                <div className="mb-12">
+                    {view === 'list' ? (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <FilterSidebar variant="horizontal" className="w-full" />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
+                            {/* Sidebar: Synchronized Height with Map */}
+                            <div className="lg:col-span-1">
+                                <FilterSidebar className="lg:h-[600px]" />
                             </div>
-                        )}
 
-                        {/* Results Sections */}
-                        {(view === 'list' || view === 'split') && (
-                            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                {/* Nearby Section */}
-                                <section>
-                                    <div className="flex justify-between items-center mb-8">
-                                        <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                                            Angebote in der Nähe
-                                            <span className="text-xs font-black bg-amber-600 text-white px-3 py-1 rounded-full shadow-lg shadow-amber-600/20">{nearbyTasks.length}</span>
-                                        </h3>
-                                    </div>
-
-                                    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                                        {nearbyTasks.map((task) => (
-                                            <TaskCard key={task.id} task={task} />
-                                        ))}
-
-                                        {nearbyTasks.length === 0 && (
-                                            <div className="col-span-full flex flex-col items-center justify-center py-24 text-gray-500 bg-white dark:bg-zinc-900 rounded-[3rem] border-4 border-dashed border-gray-100 dark:border-zinc-800 shadow-inner">
-                                                <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6">
-                                                    <MapPin size={32} className="text-gray-300" />
-                                                </div>
-                                                <p className="text-xl font-black text-gray-900 dark:text-white">Keine Angebote gefunden</p>
-                                                <p className="text-sm mt-2 text-gray-400 max-w-xs text-center">In diesem Umkreis gibt es aktuell keine aktiven Angebote. Versuche es mit einem größeren Filter.</p>
+                            {/* Map: Synchronized Height with Sidebar */}
+                            <div className="lg:col-span-3">
+                                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-1.5 shadow-2xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-zinc-800 h-[500px] lg:h-[600px] relative overflow-hidden group">
+                                    <TaskMapClient
+                                        tasks={mapData}
+                                        center={center ? [center.latitude, center.longitude] : undefined}
+                                        zoom={radius === 'all' ? 6 : Math.max(9, Math.min(15, Math.round(14.8 - Math.log2(radiusNum / 1.5))))}
+                                        userZip={userZip}
+                                        radius={radiusNum}
+                                    />
+                                    {view === 'split' && (
+                                        <div className="absolute top-6 right-6 z-[400]">
+                                            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/50 dark:border-zinc-700/50 shadow-lg text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                {mapData.length} Live-Marker
                                             </div>
-                                        )}
-                                    </div>
-                                </section>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-                                {/* Further Away Section */}
-                                {furtherTasks.length > 0 && (
-                                    <section className="pt-12 border-t border-gray-100 dark:border-zinc-900">
-                                        <div className="flex justify-between items-center mb-8">
-                                            <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                                                Etwas weiter weg
-                                                <span className="text-xs font-black bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full">{furtherTasks.length}</span>
-                                            </h3>
+                {/* Results Section (Full Width) */}
+                {(view === 'list' || view === 'split') && (
+                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {/* Nearby Section */}
+                        <section>
+                            <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-zinc-900">
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                                    Angebote in der Nähe
+                                    <span className="text-[10px] font-black bg-amber-600 text-white px-3 py-1 rounded-full shadow-lg shadow-amber-600/20">{nearbyTasks.length}</span>
+                                </h3>
+                            </div>
+
+                            <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {nearbyTasks.map((task) => (
+                                    <TaskCard key={task.id} task={task} />
+                                ))}
+
+                                {nearbyTasks.length === 0 && (
+                                    <div className="col-span-full flex flex-col items-center justify-center py-24 text-gray-500 bg-white dark:bg-zinc-900 rounded-[3rem] border-4 border-dashed border-gray-100 dark:border-zinc-800 shadow-inner">
+                                        <div className="w-20 h-20 bg-gray-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6">
+                                            <MapPin size={32} className="text-gray-300" />
                                         </div>
-                                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                                            {furtherTasks.map((task) => (
-                                                <TaskCard key={task.id} task={task} />
-                                            ))}
-                                        </div>
-                                    </section>
+                                        <p className="text-xl font-black text-gray-900 dark:text-white">Keine Angebote gefunden</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest mt-2 text-gray-400 max-w-xs text-center">Versuche den Umkreis zu erhöhen.</p>
+                                    </div>
                                 )}
                             </div>
+                        </section>
+
+                        {/* Further Away Section */}
+                        {furtherTasks.length > 0 && (
+                            <section className="pt-12 border-t border-gray-100 dark:border-zinc-900">
+                                <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-50 dark:border-zinc-900/50">
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                                        Etwas weiter weg
+                                        <span className="text-[10px] font-black bg-gray-200 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full">{furtherTasks.length}</span>
+                                    </h3>
+                                </div>
+                                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                    {furtherTasks.map((task) => (
+                                        <TaskCard key={task.id} task={task} />
+                                    ))}
+                                </div>
+                            </section>
                         )}
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
