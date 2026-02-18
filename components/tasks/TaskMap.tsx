@@ -74,7 +74,12 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
     // Create custom cluster icon
     const createClusterIcon = (count: number) => {
         return L.divIcon({
-            html: `<div class="flex items-center justify-center w-8 h-8 bg-amber-600 text-white rounded-full font-bold border-2 border-white shadow-lg">${count}</div>`,
+            html: `<div class="relative group">
+                <div class="absolute -inset-1 bg-amber-500 rounded-full blur opacity-25 group-hover:opacity-50 transition-opacity animate-pulse"></div>
+                <div class="relative flex items-center justify-center w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-full font-black text-xs border-2 border-white shadow-xl transform transition-transform group-hover:scale-110">
+                    ${count}
+                </div>
+            </div>`,
             className: 'custom-div-icon',
             iconSize: [32, 32],
             iconAnchor: [16, 16],
@@ -83,10 +88,15 @@ export default function TaskMap({ tasks = [], center = [51.1657, 10.4515], zoom 
 
     // Create custom single task icon
     const singleTaskIcon = L.divIcon({
-        html: `<div class="flex items-center justify-center w-6 h-6 bg-amber-600 text-white rounded-full font-bold border-2 border-white shadow-md text-[10px]">1</div>`,
+        html: `<div class="relative group animate-in fade-in zoom-in duration-500">
+            <div class="absolute -inset-1 bg-amber-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+            <div class="relative flex items-center justify-center w-7 h-7 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-full font-black text-[10px] border-2 border-white shadow-lg transform transition-transform group-hover:scale-110">
+                1
+            </div>
+        </div>`,
         className: 'custom-div-icon',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
     });
 
     return (

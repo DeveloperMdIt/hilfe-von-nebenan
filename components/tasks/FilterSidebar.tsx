@@ -42,7 +42,7 @@ export function FilterSidebar({ className }: { className?: string }) {
     };
 
     return (
-        <div className={`bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 space-y-6 shadow-sm flex flex-col max-h-full ${className}`}>
+        <div className={`bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-5 space-y-6 shadow-sm flex flex-col max-h-[calc(100vh-120px)] lg:sticky lg:top-24 ${className}`}>
 
             {/* Header */}
             <div className="flex justify-between items-center shrink-0">
